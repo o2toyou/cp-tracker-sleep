@@ -1,0 +1,2395 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CPトラッカー｜睡眠ケアプログラム</title>
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --navy:  #1e3a5f;
+  --teal:  #5fb3b0;
+  --gold:  #daa520;
+  --red:   #c0392b;
+  --lgray: #f5f5f5;
+  --lteal: #eaf5f5;
+  --lgold: #fffce8;
+  --lred:  #fdecea;
+  --dark:  #2b2b2b;
+  --gray:  #888;
+  --border: #e0dbd2;
+}
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, "Hiragino Kaku Gothic ProN", "Hiragino Sans", Meiryo, sans-serif;
+  background: #f7f6f3;
+  color: var(--dark);
+  line-height: 1.8;
+  min-height: 100vh;
+}
+
+/* ヘッダー */
+.app-header {
+  background: var(--navy);
+  padding: 16px 20px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.app-header h1 {
+  font-size: 15px;
+  font-weight: 700;
+  color: #fff;
+  letter-spacing: 0.04em;
+}
+.app-header .sub {
+  font-size: 11px;
+  color: var(--teal);
+  letter-spacing: 0.1em;
+  font-weight: 600;
+}
+
+/* レイアウト */
+.app-body {
+  max-width: 680px;
+  margin: 0 auto;
+  padding: 20px 16px 60px;
+}
+
+/* カード */
+.card {
+  background: #fff;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 22px 20px;
+  margin-bottom: 16px;
+}
+.card-title {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--teal);
+  letter-spacing: 0.1em;
+  margin-bottom: 14px;
+  padding-bottom: 10px;
+  border-bottom: 2px solid var(--teal);
+}
+
+/* CP入力 */
+.cp-input-row {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  margin-bottom: 14px;
+}
+.cp-input {
+  width: 100px;
+  font-size: 32px;
+  font-weight: 700;
+  color: var(--navy);
+  border: 2px solid var(--border);
+  border-radius: 6px;
+  padding: 8px 12px;
+  text-align: center;
+  outline: none;
+  transition: border-color 0.2s;
+}
+.cp-input:focus { border-color: var(--teal); }
+.cp-unit { font-size: 16px; color: var(--gray); }
+.btn-record {
+  flex: 1;
+  background: var(--teal);
+  color: #fff;
+  border: none;
+  border-radius: 6px;
+  padding: 12px 0;
+  font-size: 15px;
+  font-weight: 700;
+  cursor: pointer;
+  letter-spacing: 0.04em;
+  transition: background 0.2s;
+}
+.btn-record:hover { background: #4a9d9a; }
+
+/* Levelバッジ */
+.level-badge {
+  border-radius: 6px;
+  padding: 16px 18px;
+  margin-bottom: 14px;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+.level-badge .lv-num {
+  font-size: 28px;
+  font-weight: 700;
+  color: #fff;
+  background: rgba(255,255,255,0.15);
+  border-radius: 6px;
+  width: 52px;
+  height: 52px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+.level-badge .lv-body { flex: 1; }
+.level-badge .lv-name { font-size: 16px; font-weight: 700; color: #fff; line-height: 1.4; }
+.level-badge .lv-cp   { font-size: 12px; color: rgba(255,255,255,0.75); margin-top: 2px; }
+.level-badge .lv-goal { font-size: 13px; color: rgba(255,255,255,0.9); margin-top: 6px; line-height: 1.6; }
+
+.lv-1 { background: #1e3a5f; }
+.lv-2 { background: #2e5a7f; }
+.lv-3 { background: #3e7a9f; }
+.lv-4 { background: #5fb3b0; }
+.lv-none { background: #888; }
+
+/* 今日のプログラム */
+.program-table { width: 100%; border-collapse: collapse; font-size: 13.5px; }
+.program-table th {
+  background: var(--navy);
+  color: #fff;
+  font-weight: 700;
+  padding: 8px 10px;
+  text-align: left;
+  font-size: 12px;
+  letter-spacing: 0.05em;
+}
+.program-table td {
+  padding: 9px 10px;
+  border-bottom: 1px solid var(--border);
+  vertical-align: top;
+  line-height: 1.7;
+}
+.program-table tr:nth-child(even) td { background: var(--lteal); }
+.program-table tr:last-child td { border-bottom: none; }
+.program-table .td-timing { color: var(--navy); font-weight: 700; white-space: nowrap; }
+.program-table .td-dur { color: var(--gray); white-space: nowrap; text-align: right; }
+
+/* CO2インターバル */
+.interval-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+.interval-table td {
+  padding: 8px 10px;
+  border-bottom: 1px dashed var(--border);
+  vertical-align: middle;
+}
+.interval-table tr:last-child td { border-bottom: none; }
+.interval-table .step-label {
+  width: 90px;
+  font-weight: 700;
+  color: #fff;
+  background: var(--teal);
+  text-align: center;
+  border-radius: 3px;
+  padding: 6px 8px;
+  font-size: 12px;
+}
+.interval-table .step-label.cp-step { background: var(--navy); }
+.interval-table .step-content { color: var(--navy); padding-left: 14px; }
+.interval-note {
+  margin-top: 10px;
+  font-size: 12.5px;
+  color: var(--gray);
+  line-height: 1.8;
+  padding: 10px 14px;
+  background: var(--lgray);
+  border-radius: 4px;
+}
+
+/* グラフ */
+.chart-wrap {
+  position: relative;
+  height: 160px;
+  margin-bottom: 8px;
+  overflow: hidden;
+}
+canvas { display: block; max-width: 100%; }
+.chart-empty {
+  height: 160px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--gray);
+  font-size: 14px;
+  background: var(--lgray);
+  border-radius: 6px;
+}
+
+/* 記録一覧 */
+.record-list { list-style: none; }
+.record-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 0;
+  border-bottom: 1px dashed var(--border);
+  font-size: 14px;
+}
+.record-item:last-child { border-bottom: none; }
+.record-date { color: var(--gray); font-size: 12px; width: 80px; flex-shrink: 0; }
+.record-cp {
+  font-size: 20px;
+  font-weight: 700;
+  color: var(--navy);
+  width: 60px;
+}
+.record-lv {
+  font-size: 11px;
+  font-weight: 700;
+  color: #fff;
+  padding: 2px 8px;
+  border-radius: 3px;
+}
+.record-del {
+  margin-left: auto;
+  background: none;
+  border: none;
+  color: #ccc;
+  cursor: pointer;
+  font-size: 16px;
+  line-height: 1;
+  padding: 2px 6px;
+}
+.record-del:hover { color: var(--red); }
+
+/* 警告 */
+.caution-box {
+  background: var(--lgold);
+  border: 1px solid var(--gold);
+  border-left: 4px solid var(--gold);
+  border-radius: 4px;
+  padding: 14px 16px;
+  font-size: 13px;
+  color: var(--navy);
+  line-height: 1.85;
+  margin-bottom: 16px;
+}
+
+/* CP凡例 */
+.cp-legend { display: flex; flex-direction: column; gap: 6px; }
+.cp-legend-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 13px;
+  padding: 8px 12px;
+  border-radius: 4px;
+}
+.cp-legend-range {
+  font-weight: 700;
+  width: 80px;
+  flex-shrink: 0;
+  color: var(--teal);
+  font-size: 12px;
+}
+.cp-legend-desc { color: var(--navy); }
+
+/* タブ */
+.tabs {
+  display: flex;
+  gap: 0;
+  margin-bottom: 16px;
+  border-bottom: 2px solid var(--border);
+}
+.tab-btn {
+  flex: 1;
+  background: none;
+  border: none;
+  padding: 10px 0;
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--gray);
+  cursor: pointer;
+  border-bottom: 2px solid transparent;
+  margin-bottom: -2px;
+  transition: color 0.2s, border-color 0.2s;
+  letter-spacing: 0.03em;
+}
+.tab-btn.active {
+  color: var(--teal);
+  border-bottom-color: var(--teal);
+}
+.tab-panel { display: none; }
+.tab-panel.active { display: block; }
+
+/* 今日のCP表示 */
+.today-cp-display {
+  text-align: center;
+  padding: 18px 0 10px;
+}
+.today-cp-display .tcp-label { font-size: 12px; color: var(--gray); letter-spacing: 0.1em; }
+.today-cp-display .tcp-num {
+  font-size: 56px;
+  font-weight: 700;
+  color: var(--navy);
+  line-height: 1.1;
+}
+.today-cp-display .tcp-unit { font-size: 18px; color: var(--gray); }
+.today-cp-display .tcp-date { font-size: 12px; color: var(--gray); margin-top: 4px; }
+
+/* リセットボタン */
+.btn-danger {
+  background: none;
+  border: 1px solid #ddd;
+  color: var(--gray);
+  border-radius: 4px;
+  padding: 6px 14px;
+  font-size: 12px;
+  cursor: pointer;
+}
+.btn-danger:hover { border-color: var(--red); color: var(--red); }
+
+@media (max-width: 480px) {
+  .cp-input-row { flex-wrap: wrap; }
+  .cp-input { width: 90px; font-size: 28px; }
+}
+
+/* タイマーステップリスト */
+.timer-step-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 7px 10px;
+  border-radius: 4px;
+  font-size: 13px;
+  margin-bottom: 4px;
+  transition: background 0.2s;
+}
+.timer-step-row.current {
+  background: var(--lteal);
+  font-weight: 700;
+  color: var(--navy);
+}
+.timer-step-row.done {
+  background: var(--lgray);
+  color: var(--gray);
+  text-decoration: line-through;
+}
+.timer-step-row.upcoming { color: var(--gray); }
+.timer-step-icon { width: 22px; text-align: center; flex-shrink: 0; }
+
+/* ============================================================
+   オンボーディング オーバーレイ
+   ============================================================ */
+.onboarding-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(11,29,54,0.72);
+  z-index: 1000;
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  padding: 16px;
+  overflow-y: auto;
+}
+.onboarding-overlay.hidden { display: none; }
+
+.ob-modal {
+  background: #fff;
+  border-radius: 12px;
+  width: 100%;
+  max-width: 540px;
+  overflow: hidden;
+  margin: auto;
+}
+.ob-step.hidden { display: none; }
+
+/* ステップ表示 */
+.ob-steps {
+  display: flex;
+  background: var(--lgray);
+  border-bottom: 1px solid var(--border);
+  padding: 0;
+}
+.ob-step-dot {
+  flex: 1;
+  height: 4px;
+  background: var(--border);
+  transition: background 0.3s;
+}
+.ob-step-dot.done  { background: var(--teal); }
+.ob-step-dot.active { background: var(--navy); }
+
+/* ヘッダー */
+.ob-header {
+  background: var(--navy);
+  padding: 20px 24px 18px;
+}
+.ob-header .ob-eyebrow {
+  font-size: 11px;
+  letter-spacing: 0.22em;
+  color: var(--teal);
+  font-weight: 700;
+  display: block;
+  margin-bottom: 6px;
+}
+.ob-header h2 {
+  font-size: 18px;
+  font-weight: 700;
+  color: #fff;
+  line-height: 1.5;
+}
+
+/* コンテンツ */
+.ob-body { padding: 22px 24px 0; }
+
+/* 選択肢 */
+.ob-choices { display: flex; flex-direction: column; gap: 10px; margin-top: 10px; }
+.ob-choice {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  border: 2px solid var(--border);
+  border-radius: 8px;
+  padding: 13px 16px;
+  cursor: pointer;
+  transition: border-color 0.18s, background 0.18s;
+  user-select: none;
+}
+.ob-choice:hover { border-color: var(--teal); background: var(--lteal); }
+.ob-choice.selected { border-color: var(--navy); background: var(--lteal); }
+.ob-choice input[type=radio], .ob-choice input[type=checkbox] {
+  accent-color: var(--navy);
+  width: 18px;
+  height: 18px;
+  flex-shrink: 0;
+}
+.ob-choice-body { flex: 1; }
+.ob-choice-title { font-size: 15px; font-weight: 700; color: var(--navy); line-height: 1.4; }
+.ob-choice-desc  { font-size: 12.5px; color: var(--gray); margin-top: 2px; line-height: 1.6; }
+
+/* 体調スライダー */
+.ob-condition-row { display: flex; flex-direction: column; gap: 10px; margin-top: 10px; }
+.ob-cond-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  border: 2px solid var(--border);
+  border-radius: 8px;
+  padding: 12px 16px;
+  cursor: pointer;
+  transition: border-color 0.18s, background 0.18s;
+}
+.ob-cond-item:hover { border-color: var(--teal); }
+.ob-cond-item.selected { border-color: var(--navy); background: var(--lteal); }
+.ob-cond-icon { font-size: 24px; flex-shrink: 0; width: 32px; text-align: center; }
+.ob-cond-body { flex: 1; }
+.ob-cond-title { font-size: 14px; font-weight: 700; color: var(--navy); }
+.ob-cond-desc  { font-size: 12px; color: var(--gray); margin-top: 2px; line-height: 1.55; }
+.ob-cond-warn  {
+  margin-top: 12px;
+  padding: 10px 14px;
+  background: var(--lred);
+  border-left: 3px solid var(--red);
+  border-radius: 4px;
+  font-size: 12.5px;
+  color: var(--navy);
+  line-height: 1.8;
+  display: none;
+}
+.ob-cond-warn.show { display: block; }
+
+/* 禁忌チェック */
+.ob-caution-intro {
+  font-size: 13.5px;
+  color: var(--navy);
+  line-height: 1.9;
+  margin-bottom: 12px;
+}
+.ob-contra-list { display: flex; flex-direction: column; gap: 8px; }
+.ob-contra-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 11px 14px;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 13.5px;
+  color: var(--navy);
+  transition: background 0.15s;
+  user-select: none;
+}
+.ob-contra-item:hover { background: var(--lgray); }
+.ob-contra-item input[type=checkbox] { accent-color: var(--red); width: 17px; height: 17px; flex-shrink: 0; }
+.ob-contra-result {
+  margin-top: 14px;
+  padding: 12px 16px;
+  border-radius: 6px;
+  font-size: 13.5px;
+  line-height: 1.85;
+  display: none;
+}
+.ob-contra-result.show { display: block; }
+.ob-contra-result.ok   { background: var(--lteal); color: var(--navy); border: 1px solid var(--teal); }
+.ob-contra-result.warn { background: var(--lred);  color: var(--navy); border: 1px solid var(--red); }
+
+/* サマリー */
+.ob-summary { display: flex; flex-direction: column; gap: 10px; }
+.ob-summary-row {
+  display: flex;
+  gap: 10px;
+  align-items: baseline;
+  font-size: 14px;
+  padding: 10px 14px;
+  background: var(--lgray);
+  border-radius: 6px;
+}
+.ob-summary-label { color: var(--teal); font-weight: 700; font-size: 12px; width: 68px; flex-shrink: 0; }
+.ob-summary-val { color: var(--navy); font-weight: 700; flex: 1; line-height: 1.6; }
+.ob-summary-note { font-size: 12.5px; color: var(--gray); margin-top: 4px; line-height: 1.8; }
+
+/* フッターボタン */
+.ob-footer {
+  padding: 18px 24px 22px;
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  border-top: 1px solid var(--border);
+  margin-top: 20px;
+}
+.ob-btn-back {
+  background: none;
+  border: 1px solid var(--border);
+  color: var(--gray);
+  border-radius: 6px;
+  padding: 11px 20px;
+  font-size: 14px;
+  cursor: pointer;
+}
+.ob-btn-back:hover { border-color: var(--navy); color: var(--navy); }
+.ob-btn-next {
+  flex: 1;
+  background: var(--navy);
+  color: #fff;
+  border: none;
+  border-radius: 6px;
+  padding: 13px 0;
+  font-size: 15px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background 0.18s;
+  letter-spacing: 0.03em;
+}
+.ob-btn-next:hover { background: #2e5a7f; }
+.ob-btn-next.teal  { background: var(--teal); }
+.ob-btn-next.teal:hover { background: #4a9d9a; }
+
+/* 使い方ポイント */
+.ob-howto { display: flex; flex-direction: column; gap: 12px; margin-top: 8px; }
+.ob-howto-item { display: flex; gap: 14px; align-items: flex-start; }
+.ob-howto-num {
+  width: 28px; height: 28px;
+  border-radius: 50%;
+  background: var(--navy);
+  color: #fff;
+  font-size: 13px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+.ob-howto-body { flex: 1; }
+.ob-howto-title { font-size: 14px; font-weight: 700; color: var(--navy); line-height: 1.4; }
+.ob-howto-desc  { font-size: 12.5px; color: var(--gray); margin-top: 3px; line-height: 1.7; }
+</style>
+</head>
+<body>
+
+<!-- ============================================================
+     オンボーディング オーバーレイ
+     ============================================================ -->
+<div class="onboarding-overlay hidden" id="onboardingOverlay">
+  <div class="ob-modal">
+
+    <!-- ステップインジケーター -->
+    <div class="ob-steps" id="obSteps">
+      <div class="ob-step-dot active" id="obDot0"></div>
+      <div class="ob-step-dot" id="obDot1"></div>
+      <div class="ob-step-dot" id="obDot2"></div>
+      <div class="ob-step-dot" id="obDot3"></div>
+      <div class="ob-step-dot" id="obDot4"></div>
+    </div>
+
+    <!-- ===== STEP 0: ようこそ ===== -->
+    <div class="ob-step" id="obStep0">
+      <div class="ob-header">
+        <span class="ob-eyebrow">WELCOME</span>
+        <h2>CPトラッカーへようこそ</h2>
+      </div>
+      <div class="ob-body">
+        <div class="ob-howto">
+          <div class="ob-howto-item">
+            <div class="ob-howto-num">1</div>
+            <div class="ob-howto-body">
+              <div class="ob-howto-title">毎朝CPを測定して記録する</div>
+              <div class="ob-howto-desc">コントロールポーズ（CP）はあなたの呼吸の現在地です。毎朝起きてすぐ、同じ条件で測って入力してください。</div>
+            </div>
+          </div>
+          <div class="ob-howto-item">
+            <div class="ob-howto-num">2</div>
+            <div class="ob-howto-body">
+              <div class="ob-howto-title">今のCPでLevelが自動判定される</div>
+              <div class="ob-howto-desc">CPを入力すると、今日のLevel（1〜4）とその日のプログラムが表示されます。</div>
+            </div>
+          </div>
+          <div class="ob-howto-item">
+            <div class="ob-howto-num">3</div>
+            <div class="ob-howto-body">
+              <div class="ob-howto-title">CPが伸びたら次のLevelへ</div>
+              <div class="ob-howto-desc">週1〜2秒ずつ伸びるのが目安。CPが5秒伸びるごとに睡眠中の呼吸が安定しているサインです。</div>
+            </div>
+          </div>
+          <div class="ob-howto-item">
+            <div class="ob-howto-num">4</div>
+            <div class="ob-howto-body">
+              <div class="ob-howto-title">記録はこのブラウザに保存される</div>
+              <div class="ob-howto-desc">データはお使いの端末のブラウザに保存されます。機種変更時は引き継ぎできませんのでご注意ください。</div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="ob-footer">
+        <button class="ob-btn-next" onclick="obNext()">はじめる →</button>
+      </div>
+    </div>
+
+    <!-- ===== STEP 1: 禁忌チェック ===== -->
+    <div class="ob-step hidden" id="obStep1">
+      <div class="ob-header">
+        <span class="ob-eyebrow">STEP 1 / 4　安全確認</span>
+        <h2>はじめる前に確認してください</h2>
+      </div>
+      <div class="ob-body">
+        <p class="ob-caution-intro">
+          以下に該当する場合、マキシマムポーズや長い息止めは行わないでください。<br>
+          <b>該当するものをすべて選んでください。（なければ選ばずに次へ）</b>
+        </p>
+        <div class="ob-contra-list">
+          <label class="ob-contra-item"><input type="checkbox" name="contra" value="bp"> 高血圧がある</label>
+          <label class="ob-contra-item"><input type="checkbox" name="contra" value="heart"> 心疾患がある</label>
+          <label class="ob-contra-item"><input type="checkbox" name="contra" value="anxiety"> 不安症・パニック症がある</label>
+          <label class="ob-contra-item"><input type="checkbox" name="contra" value="preg"> 妊娠中（中期〜）</label>
+          <label class="ob-contra-item"><input type="checkbox" name="contra" value="preg1"> 妊娠初期（3ヶ月未満）</label>
+          <label class="ob-contra-item"><input type="checkbox" name="contra" value="osa"> 未治療の睡眠時無呼吸（診断・治療中でない）</label>
+          <label class="ob-contra-item"><input type="checkbox" name="contra" value="cpap"> CPAP・マウスピースを使用中</label>
+        </div>
+        <div class="ob-contra-result" id="contraResult"></div>
+      </div>
+      <div class="ob-footer">
+        <button class="ob-btn-back" onclick="obBack()">← 戻る</button>
+        <button class="ob-btn-next" id="contraCheckBtn" onclick="obNextContra()">確認する</button>
+        <button class="ob-btn-next" id="contraNextBtn" onclick="obNext()" style="display:none;">次へ →</button>
+      </div>
+    </div>
+
+    <!-- ===== STEP 2: 今日の体調 ===== -->
+    <div class="ob-step hidden" id="obStep2">
+      <div class="ob-header">
+        <span class="ob-eyebrow">STEP 2 / 4　昨夜の睡眠</span>
+        <h2>昨夜の睡眠を教えてください</h2>
+      </div>
+      <div class="ob-body">
+        <div class="ob-condition-row" id="conditionList">
+          <div class="ob-cond-item" onclick="selectCondition('good')" data-val="good">
+            <div class="ob-cond-icon">😊</div>
+            <div class="ob-cond-body">
+              <div class="ob-cond-title">良好 — よく眠れた</div>
+              <div class="ob-cond-desc">寝つきも良く、夜中の目覚めも少なかった。今日のプログラムをフルで実施できそう。</div>
+            </div>
+          </div>
+          <div class="ob-cond-item" onclick="selectCondition('mild')" data-val="mild">
+            <div class="ob-cond-icon">😐</div>
+            <div class="ob-cond-body">
+              <div class="ob-cond-title">やや不調 — 寝つきが悪い／いびきがある</div>
+              <div class="ob-cond-desc">寝つくのに時間がかかった、または軽いいびきがあった。就寝前ルーティンを優先する。</div>
+            </div>
+          </div>
+          <div class="ob-cond-item" onclick="selectCondition('bad')" data-val="bad">
+            <div class="ob-cond-icon">😪</div>
+            <div class="ob-cond-body">
+              <div class="ob-cond-title">不調 — 夜中に何度も目が覚めた</div>
+              <div class="ob-cond-desc">夜中に目が覚めて再入眠しづらかった。回復呼吸エクササイズと誘導音声を優先する。</div>
+            </div>
+          </div>
+          <div class="ob-cond-item" onclick="selectCondition('attack')" data-val="attack">
+            <div class="ob-cond-icon">🚨</div>
+            <div class="ob-cond-body">
+              <div class="ob-cond-title">強いいびき・無呼吸を指摘された</div>
+              <div class="ob-cond-desc">大きないびきや呼吸停止を家族に指摘されている。医療機関での睡眠検査をご検討ください。</div>
+            </div>
+          </div>
+        </div>
+        <div class="ob-cond-warn" id="condWarn"></div>
+      </div>
+      <div class="ob-footer">
+        <button class="ob-btn-back" onclick="obBack()">← 戻る</button>
+        <button class="ob-btn-next" id="condNextBtn" onclick="obNext()" style="opacity:0.4;pointer-events:none;">次へ →</button>
+      </div>
+    </div>
+
+    <!-- ===== STEP 3: 使い方（タブ説明） ===== -->
+    <div class="ob-step hidden" id="obStep3">
+      <div class="ob-header">
+        <span class="ob-eyebrow">STEP 3 / 4　画面の使い方</span>
+        <h2>4つのタブで管理します</h2>
+      </div>
+      <div class="ob-body">
+        <div class="ob-howto">
+          <div class="ob-howto-item">
+            <div class="ob-howto-num" style="background:var(--teal);">今</div>
+            <div class="ob-howto-body">
+              <div class="ob-howto-title">今日タブ — CPを入力してLevelを確認</div>
+              <div class="ob-howto-desc">毎朝ここにCPを入力します。自動でLevel判定され、直近7日のグラフが表示されます。</div>
+            </div>
+          </div>
+          <div class="ob-howto-item">
+            <div class="ob-howto-num" style="background:var(--teal);">プロ</div>
+            <div class="ob-howto-body">
+              <div class="ob-howto-title">プログラムタブ — 今日の1日スケジュール</div>
+              <div class="ob-howto-desc">CPに応じた今日のプログラム表が表示されます。Level 3/4はCO2インターバルの構成も表示。</div>
+            </div>
+          </div>
+          <div class="ob-howto-item">
+            <div class="ob-howto-num" style="background:var(--teal);">記</div>
+            <div class="ob-howto-body">
+              <div class="ob-howto-title">記録タブ — 過去28日のCP一覧とグラフ</div>
+              <div class="ob-howto-desc">過去のCP推移を確認できます。間違えて入力した記録は×ボタンで削除できます。</div>
+            </div>
+          </div>
+          <div class="ob-howto-item">
+            <div class="ob-howto-num" style="background:var(--teal);">ガ</div>
+            <div class="ob-howto-body">
+              <div class="ob-howto-title">ガイドタブ — CPの目安と安全情報</div>
+              <div class="ob-howto-desc">CPの目安・測り方・安全注意事項をいつでも確認できます。</div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="ob-footer">
+        <button class="ob-btn-back" onclick="obBack()">← 戻る</button>
+        <button class="ob-btn-next" onclick="obNext()">次へ →</button>
+      </div>
+    </div>
+
+    <!-- ===== STEP 4: 確認サマリー ===== -->
+    <div class="ob-step hidden" id="obStep4">
+      <div class="ob-header">
+        <span class="ob-eyebrow">STEP 4 / 4　確認</span>
+        <h2>設定を確認してスタート</h2>
+      </div>
+      <div class="ob-body">
+        <div class="ob-summary" id="obSummary"></div>
+        <div style="margin-top:14px;font-size:12.5px;color:var(--gray);line-height:1.9;">
+          この設定はいつでも「ガイド」タブから確認できます。体調や禁忌の状況が変わった場合は、プログラムや担当医と相談しながら進めてください。
+        </div>
+      </div>
+      <div class="ob-footer">
+        <button class="ob-btn-back" onclick="obBack()">← 戻る</button>
+        <button class="ob-btn-next teal" onclick="obFinish()">スタート 🎉</button>
+      </div>
+    </div>
+
+  </div>
+</div>
+<!-- /オンボーディング -->
+
+<div class="app-header">
+  <div>
+    <div class="sub">SLEEP CARE PROGRAM</div>
+    <h1>CPトラッカー</h1>
+  </div>
+  <div style="text-align:right;">
+    <div style="font-size:11px;color:rgba(255,255,255,0.5);margin-bottom:4px;">呼吸科学アカデミー</div>
+    <button onclick="resetOnboarding()" style="background:none;border:1px solid rgba(95,179,176,0.5);color:var(--teal);border-radius:4px;padding:4px 10px;font-size:11px;cursor:pointer;letter-spacing:0.04em;">設定・体調を更新</button>
+  </div>
+</div>
+
+<div class="app-body">
+
+  <!-- タブ -->
+  <div class="tabs">
+    <button class="tab-btn active" onclick="switchTab('today')">今日</button>
+    <button class="tab-btn" onclick="switchTab('program')">プログラム</button>
+    <button class="tab-btn" onclick="switchTab('timer')">タイマー</button>
+    <button class="tab-btn" onclick="switchTab('record')">記録</button>
+    <button class="tab-btn" onclick="switchTab('guide')">ガイド</button>
+  </div>
+
+  <!-- ===== TAB: 今日 ===== -->
+  <div class="tab-panel active" id="tab-today">
+
+    <!-- CP入力 -->
+    <div class="card">
+      <div class="card-title">TODAY'S CP　今日のコントロールポーズ</div>
+      <div class="today-cp-display" id="todayCpDisplay" style="display:none;">
+        <div class="tcp-label">今日のCP</div>
+        <div class="tcp-num" id="todayCpNum">—</div>
+        <div class="tcp-unit">秒</div>
+        <div class="tcp-date" id="todayCpDate"></div>
+      </div>
+      <!-- 入力方法の切り替えタブ -->
+      <div style="display:flex;gap:0;margin-bottom:16px;border-bottom:2px solid var(--border);">
+        <button id="cpModeTimer" onclick="switchCpMode('timer')" style="flex:1;background:none;border:none;padding:9px 0;font-size:13px;font-weight:700;color:var(--teal);border-bottom:2px solid var(--teal);margin-bottom:-2px;cursor:pointer;">タイマーで測る</button>
+        <button id="cpModeManual" onclick="switchCpMode('manual')" style="flex:1;background:none;border:none;padding:9px 0;font-size:13px;font-weight:700;color:var(--gray);border-bottom:2px solid transparent;margin-bottom:-2px;cursor:pointer;">手入力する</button>
+      </div>
+
+      <!-- CPタイマー -->
+      <div id="cpTimerArea" style="margin-bottom:14px;">
+        <div style="text-align:center;padding:18px 0 8px;">
+          <div style="font-size:56px;font-weight:700;color:var(--navy);line-height:1;font-variant-numeric:tabular-nums;" id="cpTimerDisplay">0.0</div>
+          <div style="font-size:12px;color:var(--gray);margin-top:4px;">秒</div>
+        </div>
+        <div style="display:flex;gap:10px;margin-bottom:8px;">
+          <button id="cpTimerBtn" onclick="cpTimerToggle()" style="flex:1;background:var(--teal);color:#fff;border:none;border-radius:6px;padding:12px 0;font-size:15px;font-weight:700;cursor:pointer;">▶ スタート</button>
+          <button onclick="cpTimerReset()" style="background:none;border:1px solid var(--border);color:var(--gray);border-radius:6px;padding:12px 16px;font-size:13px;cursor:pointer;">リセット</button>
+        </div>
+        <div style="font-size:12px;color:var(--gray);text-align:center;line-height:1.8;">
+          起床後すぐ、椅子に座って普通に吸って吐いた後、▶ スタートを押して鼻をつまんで息を止める。一番最初に「息を吸いたい」と思った瞬間に ✋ ストップを押して呼吸を再開する。息止め前後の呼吸はまったく同じ楽な呼吸であること。
+        </div>
+      </div>
+
+      <!-- 手入力 -->
+      <div id="cpManualArea" style="display:none;margin-bottom:14px;">
+        <div class="cp-input-row">
+          <input type="number" class="cp-input" id="cpInput" placeholder="0" min="0" max="120">
+          <span class="cp-unit">秒</span>
+          <button class="btn-record" onclick="recordCP()">記録する</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Level判定 -->
+    <div id="levelCard" style="display:none;">
+      <div class="card">
+        <div class="card-title">CURRENT LEVEL　あなたの現在地</div>
+        <div class="level-badge" id="levelBadge">
+          <div class="lv-num" id="lvNum">—</div>
+          <div class="lv-body">
+            <div class="lv-name" id="lvName">—</div>
+            <div class="lv-cp"  id="lvCp">—</div>
+            <div class="lv-goal" id="lvGoal">—</div>
+          </div>
+        </div>
+        <div id="nextLevelNote" style="font-size:13px;color:var(--gray);line-height:1.8;"></div>
+      </div>
+    </div>
+
+    <!-- 昨夜の睡眠更新 -->
+    <div class="card">
+      <div class="card-title">LAST NIGHT'S SLEEP　昨夜の睡眠</div>
+      <div id="conditionCard">
+        <div class="ob-condition-row" id="todayCondList">
+          <div class="ob-cond-item" onclick="updateCondition('good')" data-val="good">
+            <div class="ob-cond-icon">😊</div>
+            <div class="ob-cond-body">
+              <div class="ob-cond-title">良好 — よく眠れた</div>
+              <div class="ob-cond-desc">寝つきも良く、夜中の目覚めも少なかった。今日のプログラムをフルで実施できそう。</div>
+            </div>
+          </div>
+          <div class="ob-cond-item" onclick="updateCondition('mild')" data-val="mild">
+            <div class="ob-cond-icon">😐</div>
+            <div class="ob-cond-body">
+              <div class="ob-cond-title">やや不調 — 寝つきが悪い／いびきがある</div>
+              <div class="ob-cond-desc">寝つくのに時間がかかった、または軽いいびきがあった。就寝前ルーティンを優先する。</div>
+            </div>
+          </div>
+          <div class="ob-cond-item" onclick="updateCondition('bad')" data-val="bad">
+            <div class="ob-cond-icon">😪</div>
+            <div class="ob-cond-body">
+              <div class="ob-cond-title">不調 — 夜中に何度も目が覚めた</div>
+              <div class="ob-cond-desc">夜中に目が覚めて再入眠しづらかった。回復呼吸エクササイズと誘導音声を優先する。</div>
+            </div>
+          </div>
+          <div class="ob-cond-item" onclick="updateCondition('attack')" data-val="attack">
+            <div class="ob-cond-icon">🚨</div>
+            <div class="ob-cond-body">
+              <div class="ob-cond-title">強いいびき・無呼吸を指摘された</div>
+              <div class="ob-cond-desc">大きないびきや呼吸停止を家族に指摘されている。医療機関での睡眠検査をご検討ください。</div>
+            </div>
+          </div>
+        </div>
+        <div id="todayCondWarn" style="display:none;margin-top:12px;padding:10px 14px;border-radius:4px;font-size:13px;line-height:1.85;"></div>
+      </div>
+    </div>
+
+    <!-- CP推移グラフ（直近7日） -->
+    <div class="card">
+      <div class="card-title">RECENT TREND　直近7日のCP推移</div>
+      <div class="chart-wrap">
+        <canvas id="cpChart"></canvas>
+        <div class="chart-empty" id="chartEmpty">記録が3件以上になるとグラフが表示されます</div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- ===== TAB: プログラム ===== -->
+  <div class="tab-panel" id="tab-program">
+
+    <!-- パーソナライズされた注意メッセージ -->
+    <div id="programNotice"></div>
+
+    <!-- 今日のプログラム -->
+    <div class="card">
+      <div class="card-title">TODAY'S PROGRAM　今日のプログラム</div>
+      <div id="programContent">
+        <div style="color:var(--gray);font-size:14px;padding:16px 0;">「今日」タブでCPを記録すると、今日のプログラムが表示されます。</div>
+      </div>
+    </div>
+
+    <!-- CO2インターバル（Level 3・4のみ） -->
+    <div class="card" id="intervalCard" style="display:none;">
+      <div class="card-title">CO₂ INTERVAL　CO2インターバル構成</div>
+      <div id="intervalContent"></div>
+    </div>
+
+  </div>
+
+  <!-- ===== TAB: タイマー ===== -->
+  <div class="tab-panel" id="tab-timer">
+
+    <!-- エクサ選択 -->
+    <div class="card">
+      <div class="card-title">EXERCISE TIMER　エクササイズタイマー</div>
+      <div style="display:flex;flex-direction:column;gap:10px;" id="timerExList">
+
+        <div class="ob-cond-item" onclick="selectExercise('breathe_light_4')" data-ex="breathe_light_4">
+          <div class="ob-cond-icon">🌬️</div>
+          <div class="ob-cond-body">
+            <div class="ob-cond-title">ブリーズライト（4分）</div>
+            <div class="ob-cond-desc">「少し吸い足りない」感覚を保ちながら鼻呼吸。CO2インターバルの基本。</div>
+          </div>
+        </div>
+
+        <div class="ob-cond-item" onclick="selectExercise('breath_hold_5')" data-ex="breath_hold_5">
+          <div class="ob-cond-icon">🤏</div>
+          <div class="ob-cond-body">
+            <div class="ob-cond-title">小さな息止め × 10回（約5秒 × 10回）</div>
+            <div class="ob-cond-desc">回復呼吸エクササイズ。息止め5秒→鼻呼吸15秒を繰り返す。夜中に目が覚めたときにも有効。</div>
+          </div>
+        </div>
+
+        <div class="ob-cond-item" onclick="selectExercise('walking_recovery')" data-ex="walking_recovery">
+          <div class="ob-cond-icon">🚶</div>
+          <div class="ob-cond-body">
+            <div class="ob-cond-title">歩行中の回復呼吸エクササイズ（6セット）</div>
+            <div class="ob-cond-desc">鼻をつまんで最大10歩歩く→離して鼻呼吸40秒休憩を6回繰り返す。</div>
+          </div>
+        </div>
+
+        <div class="ob-cond-item" onclick="selectExercise('nose_clear')" data-ex="nose_clear">
+          <div class="ob-cond-icon">👃</div>
+          <div class="ob-cond-body">
+            <div class="ob-cond-title">鼻づまり解消エクササイズ（3〜5回）</div>
+            <div class="ob-cond-desc">鼻をつまんで頭を振る→離して鼻呼吸→30秒休憩を繰り返す。就寝前に行うと鼻呼吸で眠りやすくなる。</div>
+          </div>
+        </div>
+
+        <div class="ob-cond-item" onclick="selectExercise('slow_breathing')" data-ex="slow_breathing">
+          <div class="ob-cond-icon">🌊</div>
+          <div class="ob-cond-body">
+            <div class="ob-cond-title">スローブリージング 4-6（5分）</div>
+            <div class="ob-cond-desc">鼻から4秒吸って6秒吐く。就寝前・自律神経を整えるとき。「安全である」と脳に伝える呼吸。</div>
+          </div>
+        </div>
+
+        <div class="ob-cond-item" onclick="selectExercise('bedtime_routine')" data-ex="bedtime_routine">
+          <div class="ob-cond-icon">🌙</div>
+          <div class="ob-cond-body">
+            <div class="ob-cond-title">就寝前ルーティン（約12分）</div>
+            <div class="ob-cond-desc">鼻づまり解消→スローブリージング→口テープ装着の一連の流れ。</div>
+          </div>
+        </div>
+
+        <div class="ob-cond-item" onclick="selectExercise('interval_set')" data-ex="interval_set">
+          <div class="ob-cond-icon">🔄</div>
+          <div class="ob-cond-body">
+            <div class="ob-cond-title">CO2インターバル 1セット（約20分）</div>
+            <div class="ob-cond-desc">CP測定→BL4分→休憩1分×4セット→CP測定。Level 3・4向け。</div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- タイマー本体 -->
+    <div class="card" id="timerCard" style="display:none;">
+      <div class="card-title" id="timerExName">タイマー</div>
+
+      <!-- フェーズ表示 -->
+      <div style="text-align:center;padding:10px 0 6px;">
+        <div style="font-size:12px;letter-spacing:0.12em;color:var(--teal);font-weight:700;" id="timerPhaseLabel">—</div>
+        <div style="font-size:13px;color:var(--gray);margin-top:4px;" id="timerPhaseDesc">—</div>
+      </div>
+
+      <!-- 大きな残り時間 -->
+      <div style="text-align:center;padding:16px 0;">
+        <div style="font-size:72px;font-weight:700;color:var(--navy);line-height:1;font-variant-numeric:tabular-nums;" id="timerDisplay">00:00</div>
+        <div style="font-size:13px;color:var(--gray);margin-top:8px;" id="timerProgress">—</div>
+      </div>
+
+      <!-- プログレスバー -->
+      <div style="background:var(--lgray);border-radius:4px;height:6px;margin-bottom:20px;overflow:hidden;">
+        <div id="timerBar" style="background:var(--teal);height:100%;width:0%;transition:width 0.5s linear;border-radius:4px;"></div>
+      </div>
+
+      <!-- ボタン -->
+      <div style="display:flex;gap:10px;">
+        <button id="timerStartBtn" onclick="timerStartPause()" style="flex:1;background:var(--teal);color:#fff;border:none;border-radius:6px;padding:14px 0;font-size:16px;font-weight:700;cursor:pointer;">▶ スタート</button>
+        <button id="timerNextBtn" onclick="timerManualNext()" style="display:none;flex:1;background:var(--navy);color:#fff;border:none;border-radius:6px;padding:14px 0;font-size:16px;font-weight:700;cursor:pointer;">次へ →</button>
+        <button onclick="timerReset()" style="background:none;border:1px solid var(--border);color:var(--gray);border-radius:6px;padding:14px 20px;font-size:14px;cursor:pointer;">リセット</button>
+      </div>
+
+      <!-- セット構成ミニ表示 -->
+      <div id="timerSteps" style="margin-top:16px;"></div>
+    </div>
+
+    <!-- 誘導音声 -->
+    <div class="card">
+      <div class="card-title">GUIDED AUDIO　誘導音声</div>
+
+      <div style="font-size:13px;color:var(--gray);margin-bottom:14px;line-height:1.8;">
+        就寝前・夜中に目が覚めたとき・日中の気分転換にご利用ください。タップで音声プレーヤーが開きます。
+      </div>
+
+      <!-- 就寝前 -->
+      <div style="font-size:12px;font-weight:700;color:var(--teal);letter-spacing:0.1em;margin-bottom:8px;">🌙 就寝前・寝つき用</div>
+      <div style="display:flex;flex-direction:column;gap:8px;margin-bottom:16px;">
+
+        <div id="audio-sleep-piano" style="border:1px solid var(--border);border-radius:6px;overflow:hidden;">
+          <div onclick="toggleAudio('audio-sleep-piano')" style="display:flex;align-items:center;gap:12px;padding:12px 14px;cursor:pointer;background:var(--lteal);">
+            <span style="font-size:20px;">🎹</span>
+            <div style="flex:1;">
+              <div style="font-size:14px;font-weight:700;color:var(--navy);">スリープイージー（ピアノ）</div>
+              <div style="font-size:12px;color:var(--gray);margin-top:2px;">就寝前の誘導音声・ピアノBGM</div>
+            </div>
+            <span class="audio-arrow" style="color:var(--teal);font-size:18px;transition:transform 0.2s;">▶</span>
+          </div>
+          <div class="audio-player-wrap" style="display:none;">
+            <iframe src="https://utage-system.com/audio/qrJIyJvrj6Oo" style="width:100%;height:80px;border:none;" allow="autoplay" loading="lazy"></iframe>
+          </div>
+        </div>
+
+        <div id="audio-sleep-green" style="border:1px solid var(--border);border-radius:6px;overflow:hidden;">
+          <div onclick="toggleAudio('audio-sleep-green')" style="display:flex;align-items:center;gap:12px;padding:12px 14px;cursor:pointer;background:var(--lteal);">
+            <span style="font-size:20px;">🌿</span>
+            <div style="flex:1;">
+              <div style="font-size:14px;font-weight:700;color:var(--navy);">スリープイージー（グリーン）</div>
+              <div style="font-size:12px;color:var(--gray);margin-top:2px;">就寝前の誘導音声・自然音BGM</div>
+            </div>
+            <span class="audio-arrow" style="color:var(--teal);font-size:18px;transition:transform 0.2s;">▶</span>
+          </div>
+          <div class="audio-player-wrap" style="display:none;">
+            <iframe src="https://utage-system.com/audio/qkrhNCkZQeVz" style="width:100%;height:80px;border:none;" allow="autoplay" loading="lazy"></iframe>
+          </div>
+        </div>
+
+        <div id="audio-sleep-main" style="border:1px solid var(--border);border-radius:6px;overflow:hidden;">
+          <div onclick="toggleAudio('audio-sleep-main')" style="display:flex;align-items:center;gap:12px;padding:12px 14px;cursor:pointer;background:var(--lteal);">
+            <span style="font-size:20px;">😴</span>
+            <div style="flex:1;">
+              <div style="font-size:14px;font-weight:700;color:var(--navy);">スリープ・イージー</div>
+              <div style="font-size:12px;color:var(--gray);margin-top:2px;">寝つきを助ける誘導音声</div>
+            </div>
+            <span class="audio-arrow" style="color:var(--teal);font-size:18px;transition:transform 0.2s;">▶</span>
+          </div>
+          <div class="audio-player-wrap" style="display:none;">
+            <iframe src="https://utage-system.com/audio/wehQEEhETbYX" style="width:100%;height:80px;border:none;" allow="autoplay" loading="lazy"></iframe>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- 夜中に目が覚めたとき -->
+      <div style="font-size:12px;font-weight:700;color:var(--teal);letter-spacing:0.1em;margin-bottom:8px;">🌌 夜中に目が覚めたとき</div>
+      <div style="display:flex;flex-direction:column;gap:8px;margin-bottom:16px;">
+
+        <div id="audio-awareness" style="border:1px solid var(--border);border-radius:6px;overflow:hidden;">
+          <div onclick="toggleAudio('audio-awareness')" style="display:flex;align-items:center;gap:12px;padding:12px 14px;cursor:pointer;background:#f0f9f9;">
+            <span style="font-size:20px;">🌬️</span>
+            <div style="flex:1;">
+              <div style="font-size:14px;font-weight:700;color:var(--navy);">気づきの呼吸エクササイズ</div>
+              <div style="font-size:12px;color:var(--gray);margin-top:2px;">思考を静め、体に意識を戻して再入眠を助ける</div>
+            </div>
+            <span class="audio-arrow" style="color:var(--teal);font-size:18px;transition:transform 0.2s;">▶</span>
+          </div>
+          <div class="audio-player-wrap" style="display:none;">
+            <iframe src="https://utage-system.com/audio/PZad1YuphDJB" style="width:100%;height:80px;border:none;" allow="autoplay" loading="lazy"></iframe>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- お昼 -->
+      <div style="font-size:12px;font-weight:700;color:var(--teal);letter-spacing:0.1em;margin-bottom:8px;">☀️ 日中のリラクゼーション</div>
+      <div style="display:flex;flex-direction:column;gap:8px;">
+
+        <div id="audio-breathe-light" style="border:1px solid var(--border);border-radius:6px;overflow:hidden;">
+          <div onclick="toggleAudio('audio-breathe-light')" style="display:flex;align-items:center;gap:12px;padding:12px 14px;cursor:pointer;background:#f0f9f9;">
+            <span style="font-size:20px;">😌</span>
+            <div style="flex:1;">
+              <div style="font-size:14px;font-weight:700;color:var(--navy);">リラクゼーションとブリーズライト</div>
+              <div style="font-size:12px;color:var(--gray);margin-top:2px;">日中のブリーズライト・気分転換に</div>
+            </div>
+            <span class="audio-arrow" style="color:var(--teal);font-size:18px;transition:transform 0.2s;">▶</span>
+          </div>
+          <div class="audio-player-wrap" style="display:none;">
+            <iframe src="https://utage-system.com/audio/w2nsA9c9dNmD" style="width:100%;height:80px;border:none;" allow="autoplay" loading="lazy"></iframe>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+  </div>
+
+  <!-- ===== TAB: 記録 ===== -->
+  <div class="tab-panel" id="tab-record">
+
+    <div class="card">
+      <div class="card-title">CP HISTORY　記録一覧</div>
+      <ul class="record-list" id="recordList">
+        <li style="color:var(--gray);font-size:14px;padding:16px 0;">まだ記録がありません。</li>
+      </ul>
+    </div>
+
+    <!-- 28日グラフ -->
+    <div class="card">
+      <div class="card-title">28-DAY CHART　28日間のCP推移</div>
+      <div class="chart-wrap">
+        <canvas id="cpChart28"></canvas>
+        <div class="chart-empty" id="chartEmpty28">記録が3件以上になるとグラフが表示されます</div>
+      </div>
+    </div>
+
+    <div style="text-align:right;margin-top:8px;">
+      <button class="btn-danger" onclick="clearAll()">全記録を削除</button>
+    </div>
+
+  </div>
+
+  <!-- ===== TAB: ガイド ===== -->
+  <div class="tab-panel" id="tab-guide">
+
+    <div class="card">
+      <div class="card-title">CP GUIDE　CPスコアの目安</div>
+      <div class="cp-legend">
+        <div class="cp-legend-row" style="background:#eaf5f5;">
+          <div class="cp-legend-range">40秒以上</div>
+          <div class="cp-legend-desc">理想的な状態。睡眠中の呼吸が落ち着いている。</div>
+        </div>
+        <div class="cp-legend-row" style="background:#f5f5f5;">
+          <div class="cp-legend-range">20〜40秒</div>
+          <div class="cp-legend-desc">標準的。日常生活・睡眠への影響が少ない。</div>
+        </div>
+        <div class="cp-legend-row" style="background:#f5f5f5;">
+          <div class="cp-legend-range">10〜20秒</div>
+          <div class="cp-legend-desc">改善の余地あり。睡眠中に速く強い呼吸をしているサイン。</div>
+        </div>
+        <div class="cp-legend-row" style="background:#fff8e6;">
+          <div class="cp-legend-range">10秒未満</div>
+          <div class="cp-legend-desc">呼吸パターンが睡眠の質に影響している可能性が高い。</div>
+        </div>
+      </div>
+      <div style="margin-top:14px;font-size:12.5px;color:var(--gray);line-height:1.9;padding:10px 14px;background:var(--lgray);border-radius:4px;">
+        CPは診断ツールではなく、進捗確認の目安です。週1〜2秒ずつ伸ばすことが目標。CPが5秒伸びるごとに呼吸パターン、ひいては睡眠の質が改善しているサインです。
+      </div>
+    </div>
+
+    <!-- CP × 禁忌 Level対応表 -->
+    <div class="card">
+      <div class="card-title">LEVEL GUIDE　CPスコア × 禁忌 → あなたのLevel</div>
+      <table style="width:100%;border-collapse:collapse;font-size:13px;">
+        <thead>
+          <tr>
+            <th style="background:var(--navy);color:#fff;padding:9px 10px;text-align:left;font-size:12px;letter-spacing:0.04em;">CP</th>
+            <th style="background:var(--teal);color:#fff;padding:9px 10px;text-align:left;font-size:12px;letter-spacing:0.04em;">禁忌なし</th>
+            <th style="background:#3e7a9f;color:#fff;padding:9px 10px;text-align:left;font-size:12px;letter-spacing:0.04em;">禁忌あり</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td style="padding:10px;border-bottom:1px solid var(--border);background:var(--lgray);font-weight:700;color:var(--navy);">10秒未満</td>
+            <td style="padding:10px;border-bottom:1px solid var(--border);">
+              <span style="background:#1e3a5f;color:#fff;border-radius:3px;padding:2px 8px;font-size:11px;font-weight:700;">Level 1</span><br>
+              <span style="font-size:12px;color:var(--gray);margin-top:4px;display:block;">通常プログラムで進める</span>
+            </td>
+            <td style="padding:10px;border-bottom:1px solid var(--border);">
+              <span style="background:#1e3a5f;color:#fff;border-radius:3px;padding:2px 8px;font-size:11px;font-weight:700;">Level 1</span><br>
+              <span style="font-size:12px;color:var(--gray);margin-top:4px;display:block;">息止めは3秒から始める</span>
+            </td>
+          </tr>
+          <tr>
+            <td style="padding:10px;border-bottom:1px solid var(--border);background:var(--lgray);font-weight:700;color:var(--navy);">10〜15秒</td>
+            <td style="padding:10px;border-bottom:1px solid var(--border);">
+              <span style="background:#2e5a7f;color:#fff;border-radius:3px;padding:2px 8px;font-size:11px;font-weight:700;">Level 2</span><br>
+              <span style="font-size:12px;color:var(--gray);margin-top:4px;display:block;">通常プログラムで進める</span>
+            </td>
+            <td style="padding:10px;border-bottom:1px solid var(--border);">
+              <span style="background:#2e5a7f;color:#fff;border-radius:3px;padding:2px 8px;font-size:11px;font-weight:700;">Level 2</span><br>
+              <span style="font-size:12px;color:var(--gray);margin-top:4px;display:block;">息止めは3秒から始める</span>
+            </td>
+          </tr>
+          <tr>
+            <td style="padding:10px;border-bottom:1px solid var(--border);background:var(--lgray);font-weight:700;color:var(--navy);">15秒以上</td>
+            <td style="padding:10px;border-bottom:1px solid var(--border);">
+              <span style="background:#5fb3b0;color:#fff;border-radius:3px;padding:2px 8px;font-size:11px;font-weight:700;">Level 4</span><br>
+              <span style="font-size:12px;color:var(--gray);margin-top:4px;display:block;">BL＋マキシマムポーズ（MP）可</span>
+            </td>
+            <td style="padding:10px;border-bottom:1px solid var(--border);">
+              <span style="background:#3e7a9f;color:#fff;border-radius:3px;padding:2px 8px;font-size:11px;font-weight:700;">Level 3</span><br>
+              <span style="font-size:12px;color:var(--gray);margin-top:4px;display:block;">ブリーズライト（BL）のみ</span>
+            </td>
+          </tr>
+          <tr>
+            <td style="padding:10px;background:var(--lgray);font-weight:700;color:var(--navy);">未記録</td>
+            <td colspan="2" style="padding:10px;text-align:center;color:var(--teal);font-weight:700;font-size:13px;">
+              📏 まず「今日」タブでCPを測定してください
+            </td>
+          </tr>
+        </tbody>
+      </table>
+      <div style="margin-top:10px;font-size:12px;color:var(--gray);line-height:1.8;padding:8px 12px;background:var(--lgray);border-radius:4px;">
+        禁忌：高血圧・心疾患・不安症・パニック症・妊娠中・未治療の睡眠時無呼吸など。初回のオンボーディングで設定済み。変更は右上「設定・体調を更新」から。
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">HOW TO MEASURE　CPの測り方</div>
+      <table class="program-table">
+        <tr><td class="td-timing">① </td><td>起床後すぐ、椅子に座って普通に鼻から吸って吐く</td></tr>
+        <tr><td class="td-timing">② </td><td>指で鼻をつまむ</td></tr>
+        <tr><td class="td-timing">③ </td><td>「息を吸いたいかも」の最初の感覚で指を離す</td></tr>
+        <tr><td class="td-timing">④ </td><td>この間の秒数がCP。放した後に呼吸が乱れなければ正確に測れている</td></tr>
+      </table>
+      <div style="margin-top:12px;font-size:12.5px;color:var(--gray);line-height:1.85;">
+        苦しくなるまで我慢する測定ではありません。毎朝起きてすぐ、同じ条件で測ることが大切です。
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">SAFETY　安全に関する注意事項</div>
+      <div style="font-size:13.5px;color:var(--navy);line-height:2;">
+        <b style="color:var(--red);">以下に該当する方は Level 3まで で進めてください：</b><br>
+        高血圧・心疾患・不安症・パニック症・重篤な持病・60歳以上・妊娠初期（全エクササイズ不可）・妊娠中期（ブリーズライトと鼻呼吸は可。長い息止め・マキシマムポーズはNG）
+      </div>
+      <div style="margin-top:12px;padding:12px 14px;background:var(--lgold);border-radius:4px;font-size:13px;color:var(--navy);line-height:1.9;">
+        <b>CPAP・マウスピース使用中の方へ：</b>口テープは緊急時に口を開けられる「囲むタイプ」を選び、装置は継続してご使用ください。呼吸エクササイズは装置の使用を妨げるものではなく、併用することで効果が高まる場合があります。
+      </div>
+      <div style="margin-top:12px;padding:12px 14px;background:var(--lred);border-radius:4px;font-size:13px;color:var(--navy);line-height:1.9;">
+        大きないびきや呼吸停止をご家族から指摘されている場合、まず医療機関での睡眠検査をご検討ください。このプログラムは診断や治療の代わりにはなりません。
+      </div>
+      <div style="margin-top:12px;font-size:12.5px;color:var(--gray);line-height:1.85;">
+        このアプリは教育目的のツールです。医療行為ではありません。睡眠時無呼吸の治療方針は必ず担当医とご相談ください。
+      </div>
+    </div>
+
+  </div>
+
+</div><!-- /app-body -->
+
+<script>
+// ============================================================
+// データ管理
+// ============================================================
+const STORAGE_KEY = 'sleep_cp_records';
+
+function loadRecords() {
+  try {
+    return JSON.parse(localStorage.getItem(STORAGE_KEY)) || [];
+  } catch { return []; }
+}
+
+function saveRecords(records) {
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(records));
+}
+
+// ============================================================
+// Level判定
+// ============================================================
+function getLevel(cp) {
+  if (cp === null || cp === undefined) return null;
+  if (cp < 10) return 1;
+  if (cp < 15) return 2;
+  return 3; // 禁忌あり/なしはユーザー判断なので3を基準に表示
+}
+
+const LEVEL_DATA = {
+  1: {
+    name: '口を閉じる習慣をつくる',
+    cp: 'CP 10秒未満',
+    goal: '小さな息止めを1時間ごとに実施。まず日中・睡眠中ともに口を閉じることを徹底する。',
+    cls: 'lv-1',
+    next: 'CP 10秒以上が3日続いたら Level 2 へ',
+    program: [
+      ['起床後すぐ',       'CPを測定して記録',                              '2分',      null],
+      ['日中（1時間ごと）','回復呼吸エクササイズ（小さな息止め）',          '10分',     'breath_hold_5'],
+      ['または',           '歩行中の回復呼吸エクササイズ（最大10歩×6回）', '5〜10分',  'walking_recovery'],
+      ['散歩・移動',       '口を閉じて鼻呼吸で歩く',                        '自然に',   null],
+      ['鼻づまり時',       '鼻づまり解消エクササイズ',                      '必要時',   'nose_clear'],
+      ['就寝前',           '就寝前ルーティン（鼻づまり解消→口テープ）',      '約12分',   'bedtime_routine'],
+    ],
+    hasInterval: false,
+  },
+  2: {
+    name: 'ブリーズライトを定着させる',
+    cp: 'CP 10〜15秒',
+    goal: 'ブリーズライトを1日6セット習慣化。就寝前ルーティンで寝つきを整える。',
+    cls: 'lv-2',
+    next: 'CP 15秒以上が3日続いたら Level 3 / Level 4 へ',
+    program: [
+      ['起床後すぐ',       'CPを測定して記録',                               '2分',      null],
+      ['日中（6セット）',  'ブリーズライト（空気飢餓感あり）',               '4分×6回', 'breathe_light_4'],
+      ['日中1回',          '口を閉じたまま歩く',                             '10分',     null],
+      ['鼻づまり時',       '鼻づまり解消エクササイズ（就寝前ルーティンに含む）', '必要時',   'nose_clear'],
+      ['就寝前',           '就寝前ルーティン（鼻づまり解消→スローブリージング→口テープ）', '約12分','bedtime_routine'],
+      ['夜中に目覚めたら', '回復呼吸エクササイズ＋誘導音声',                '随時',     'breath_hold_5'],
+    ],
+    hasInterval: false,
+  },
+  3: {
+    name: 'CO2インターバルを組む',
+    cp: 'CP 15秒以上',
+    goal: 'CO2インターバルを1日3セット実施（禁忌あり：ブリーズライトのみ。禁忌なし：＋マキシマムポーズ）。',
+    cls: 'lv-3',
+    next: null,
+    program: [
+      ['起床後すぐ',       'CPを測定して記録',                          '2分',       null],
+      ['日中（3セット）',  'CO2インターバル（下記参照）',               '約20分×3回','interval_set'],
+      ['鼻づまり時',       '鼻づまり解消エクササイズ',                  '必要時',    'nose_clear'],
+      ['夜中に目覚めたら', '回復呼吸エクササイズ＋誘導音声',           '随時',      'breath_hold_5'],
+      ['就寝前',           '就寝前ルーティン（鼻づまり解消→スローブリージング→口テープ）', '約12分', 'bedtime_routine'],
+    ],
+    hasInterval: true,
+  },
+};
+
+// ============================================================
+// CP記録
+// ============================================================
+function recordCP() {
+  const val = parseInt(document.getElementById('cpInput').value);
+  if (isNaN(val) || val < 0 || val > 120) {
+    alert('0〜120の範囲で入力してください。');
+    return;
+  }
+  const records = loadRecords();
+  const today = todayStr();
+  // 同日の記録は上書き
+  const idx = records.findIndex(r => r.date === today);
+  if (idx >= 0) {
+    records[idx].cp = val;
+  } else {
+    records.unshift({ date: today, cp: val });
+  }
+  // 最大60件保持
+  if (records.length > 60) records.pop();
+  saveRecords(records);
+  document.getElementById('cpInput').value = '';
+  renderAll();
+}
+
+function deleteRecord(date) {
+  const records = loadRecords().filter(r => r.date !== date);
+  saveRecords(records);
+  renderAll();
+}
+
+function clearAll() {
+  if (!confirm('全ての記録を削除しますか？この操作は取り消せません。')) return;
+  localStorage.removeItem(STORAGE_KEY);
+  renderAll();
+}
+
+// ============================================================
+// 表示
+// ============================================================
+function todayStr() {
+  const d = new Date();
+  return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+}
+
+function formatDate(str) {
+  const [y, m, d] = str.split('-');
+  return `${m}/${d}`;
+}
+
+function renderAll() {
+  const records = loadRecords();
+  renderTodayCard(records);
+  renderLevelCard(records);
+  renderProgramCard(records);
+  renderRecordList(records);
+  renderChart7(records);
+  renderChart28(records);
+}
+
+function renderTodayCard(records) {
+  const today = todayStr();
+  const rec = records.find(r => r.date === today);
+  const disp = document.getElementById('todayCpDisplay');
+  if (rec) {
+    disp.style.display = 'block';
+    document.getElementById('todayCpNum').textContent = rec.cp;
+    document.getElementById('todayCpDate').textContent = '今日 ' + formatDate(today) + ' 記録済み';
+  } else {
+    disp.style.display = 'none';
+  }
+}
+
+function renderLevelCard(records) {
+  const today = todayStr();
+  const rec = records.find(r => r.date === today);
+  const card = document.getElementById('levelCard');
+  if (!rec) { card.style.display = 'none'; return; }
+  card.style.display = 'block';
+
+  const lv = getLevel(rec.cp);
+  const data = LEVEL_DATA[lv];
+  const badge = document.getElementById('levelBadge');
+  badge.className = 'level-badge ' + data.cls;
+  document.getElementById('lvNum').textContent = lv === 3 ? '3/4' : lv;
+  document.getElementById('lvName').textContent = data.name;
+  document.getElementById('lvCp').textContent = data.cp;
+  document.getElementById('lvGoal').textContent = data.goal;
+  const note = document.getElementById('nextLevelNote');
+  note.textContent = data.next ? '▶ ' + data.next : '';
+}
+
+function renderProgramCard(records) {
+  const today = todayStr();
+  const rec = records.find(r => r.date === today);
+  const el = document.getElementById('programContent');
+  const intervalCard = document.getElementById('intervalCard');
+  const noticeEl = document.getElementById('programNotice');
+
+  // --- パーソナライズ注意メッセージ ---
+  const hasContra  = obProfile.hasContra;
+  const hasPreg1   = obProfile.hasPreg1;
+  const hasPreg    = obProfile.contraindications.includes('preg');
+  const hasOsa     = obProfile.contraindications.includes('osa');
+
+  if (!rec) {
+    // CP未記録
+    noticeEl.innerHTML = `
+      <div style="background:var(--lgray);border:1px solid var(--border);border-left:4px solid var(--teal);border-radius:4px;padding:14px 16px;font-size:13.5px;color:var(--navy);line-height:1.85;margin-bottom:16px;">
+        📋 まず「<b>今日</b>」タブでCPを測定して記録してください。CPの値に応じた今日のプログラムがここに表示されます。
+      </div>`;
+    el.innerHTML = '<div style="color:var(--gray);font-size:14px;padding:16px 0;">「今日」タブでCPを記録すると、今日のプログラムが表示されます。</div>';
+    intervalCard.style.display = 'none';
+    return;
+  }
+
+  // CP記録あり → CPと禁忌の組み合わせでメッセージを決定
+  const lv = getLevel(rec.cp);
+  let noticeHTML = '';
+
+  if (hasPreg1) {
+    noticeHTML = `
+      <div style="background:var(--lred);border:1px solid var(--red);border-left:4px solid var(--red);border-radius:4px;padding:14px 16px;font-size:13.5px;color:var(--navy);line-height:1.85;margin-bottom:16px;">
+        🚫 <b>妊娠初期のため、すべての呼吸エクササイズはお控えください。</b>安定期に入ってから担当医にご相談の上、改めてご使用ください。
+      </div>`;
+  } else if (hasOsa) {
+    noticeHTML = `
+      <div style="background:var(--lred);border:1px solid var(--red);border-left:4px solid var(--red);border-radius:4px;padding:14px 16px;font-size:13.5px;color:var(--navy);line-height:1.85;margin-bottom:16px;">
+        🚫 <b>未治療の睡眠時無呼吸の可能性があります。</b>呼吸エクササイズを行う前に、まず医療機関での睡眠検査をご検討ください。診断後、担当医と相談しながらこのプログラムを補助的にご利用ください。
+      </div>`;
+  } else if (hasPreg) {
+    noticeHTML = `
+      <div style="background:var(--lgold);border:1px solid var(--gold);border-left:4px solid var(--gold);border-radius:4px;padding:14px 16px;font-size:13.5px;color:var(--navy);line-height:1.85;margin-bottom:16px;">
+        ⚠ <b>妊娠中期のため、ブリーズライトと鼻呼吸は行えます。</b>長い息止め・マキシマムポーズ・口テープは避けてください。必ず担当医にご確認ください。
+      </div>`;
+  } else if (hasContra && lv === 3) {
+    noticeHTML = `
+      <div style="background:var(--lgold);border:1px solid var(--gold);border-left:4px solid var(--gold);border-radius:4px;padding:14px 16px;font-size:13.5px;color:var(--navy);line-height:1.85;margin-bottom:16px;">
+        ⚠ <b>禁忌あり × CP ${rec.cp}秒（Level 3）</b>：CO2インターバルはブリーズライトのみのセットで進めてください。マキシマムポーズ・長い息止めは行わないでください。
+      </div>`;
+  } else if (!hasContra && lv === 3) {
+    noticeHTML = `
+      <div style="background:var(--lteal);border:1px solid var(--teal);border-left:4px solid var(--teal);border-radius:4px;padding:14px 16px;font-size:13.5px;color:var(--navy);line-height:1.85;margin-bottom:16px;">
+        ✓ <b>CP ${rec.cp}秒（Level 3/4）× 禁忌なし</b>：ブリーズライト＋マキシマムポーズのセットで進めます。MPは呼吸が落ち着いてから次に進んでください。
+      </div>`;
+  } else if (hasContra && lv <= 2) {
+    noticeHTML = `
+      <div style="background:var(--lgold);border:1px solid var(--gold);border-left:4px solid var(--gold);border-radius:4px;padding:14px 16px;font-size:13.5px;color:var(--navy);line-height:1.85;margin-bottom:16px;">
+        ⚠ <b>禁忌あり × CP ${rec.cp}秒（Level ${lv}）</b>：息止めは短め（3秒から）で行い、無理のない範囲で続けてください。
+      </div>`;
+  } else {
+    // 禁忌なし Level 1・2
+    noticeHTML = `
+      <div style="background:var(--lteal);border:1px solid var(--teal);border-left:4px solid var(--teal);border-radius:4px;padding:14px 16px;font-size:13.5px;color:var(--navy);line-height:1.85;margin-bottom:16px;">
+        ✓ <b>CP ${rec.cp}秒（Level ${lv}）</b>：今日のプログラムを進めましょう。CPが上がったら次のLevelへ。
+      </div>`;
+  }
+  noticeEl.innerHTML = noticeHTML;
+
+  const data = LEVEL_DATA[lv];
+
+  let html = '<table class="program-table"><thead><tr><th>タイミング</th><th>内容</th><th></th></tr></thead><tbody>';
+  data.program.forEach(([t, c, d, key]) => {
+    if (key) {
+      html += `<tr style="cursor:pointer;" onclick="jumpToTimer('${key}')" title="タイマーで開く">
+        <td class="td-timing">${t}</td>
+        <td>${c}</td>
+        <td class="td-dur" style="color:var(--teal);white-space:nowrap;">▶ ${d}</td>
+      </tr>`;
+    } else {
+      html += `<tr><td class="td-timing">${t}</td><td>${c}</td><td class="td-dur">${d}</td></tr>`;
+    }
+  });
+  html += '</tbody></table>';
+  html += '<div style="margin-top:8px;font-size:11.5px;color:var(--gray);">▶ のある行をタップするとタイマーに移動します</div>';
+  el.innerHTML = html;
+
+  // CO2インターバル
+  if (data.hasInterval) {
+    intervalCard.style.display = 'block';
+    renderIntervalCard(lv);
+  } else {
+    intervalCard.style.display = 'none';
+  }
+}
+
+function renderIntervalCard() {
+  const el = document.getElementById('intervalContent');
+
+  const stepsBase = [
+    ['CP測定', 'cp-step', '開始前にCPを測る'],
+    ['BL 4分', '',        'ブリーズライト（空気飢餓感を感じながら）'],
+    ['休憩 1分','',       '普通に鼻呼吸して休む'],
+    ['BL 4分', '',        'ブリーズライト'],
+    ['休憩 1分','',       '普通に鼻呼吸して休む'],
+    ['BL 4分', '',        'ブリーズライト'],
+    ['休憩 1分','',       '普通に鼻呼吸して休む'],
+    ['BL 4分', '',        'ブリーズライト'],
+    ['CP測定', 'cp-step', '終了後にCPを測る（前後で比較する）'],
+  ];
+
+  const stepsMP = [
+    ['CP測定', 'cp-step', '開始前にCPを測る'],
+    ['BL 4分', '',        'ブリーズライト（空気飢餓感を感じながら）'],
+    ['MP 1回', '',        'マキシマムポーズ（呼吸が落ち着いてから次へ）'],
+    ['BL 4分', '',        'ブリーズライト'],
+    ['MP 1回', '',        'マキシマムポーズ'],
+    ['BL 4分', '',        'ブリーズライト'],
+    ['MP 1回', '',        'マキシマムポーズ'],
+    ['BL 4分', '',        'ブリーズライト'],
+    ['CP測定', 'cp-step', '終了後にCPを測る'],
+  ];
+
+  function stepsHTML(steps, title) {
+    let h = `<div style="font-size:13px;font-weight:700;color:var(--teal);margin-bottom:8px;">${title}</div>`;
+    h += '<table class="interval-table"><tbody>';
+    steps.forEach(([label, cls, content]) => {
+      h += `<tr><td><span class="step-label ${cls}">${label}</span></td><td class="step-content">${content}</td></tr>`;
+    });
+    h += '</tbody></table>';
+    return h;
+  }
+
+  el.innerHTML =
+    stepsHTML(stepsBase, '禁忌あり — ブリーズライトのみ（約20分）') +
+    '<div style="height:20px;"></div>' +
+    stepsHTML(stepsMP, '禁忌なし — ブリーズライト＋マキシマムポーズ（約20分）') +
+    `<div class="interval-note">1日3セットが目標。セット後にCPが伸びていれば正しく行えています。<br>マキシマムポーズ後に呼吸が乱れる場合は息止め時間が長すぎです。少し短くしてください。</div>`;
+}
+
+function renderRecordList(records) {
+  const el = document.getElementById('recordList');
+  if (!records.length) {
+    el.innerHTML = '<li style="color:var(--gray);font-size:14px;padding:16px 0;">まだ記録がありません。</li>';
+    return;
+  }
+  const lvColors = { 1: '#1e3a5f', 2: '#2e5a7f', 3: '#5fb3b0' };
+  el.innerHTML = records.slice(0, 28).map(r => {
+    const lv = getLevel(r.cp);
+    const lvLabel = lv === 3 ? '3/4' : lv;
+    return `<li class="record-item">
+      <span class="record-date">${formatDate(r.date)}</span>
+      <span class="record-cp">${r.cp}</span>
+      <span class="record-lv" style="background:${lvColors[lv]}">Lv${lvLabel}</span>
+      <span style="font-size:12px;color:var(--gray);flex:1;">${levelName(lv)}</span>
+      <button class="record-del" onclick="deleteRecord('${r.date}')" title="削除">×</button>
+    </li>`;
+  }).join('');
+}
+
+function levelName(lv) {
+  return ['', '口を閉じる', 'ブリーズライト', 'CO2インターバル'][lv] || '';
+}
+
+// ============================================================
+// グラフ描画（Canvas）
+// ============================================================
+function drawChart(canvasId, emptyId, records, maxDays) {
+  const canvas = document.getElementById(canvasId);
+  const emptyEl = document.getElementById(emptyId);
+  const data = records.slice(0, maxDays).reverse(); // 古い順
+
+  if (data.length < 3) {
+    canvas.style.display = 'none';
+    emptyEl.style.display = 'flex';
+    return;
+  }
+  canvas.style.display = 'block';
+  emptyEl.style.display = 'none';
+
+  const dpr = window.devicePixelRatio || 1;
+  const W = canvas.parentElement.clientWidth || canvas.parentElement.offsetWidth || 300;
+  const H = 160;
+  canvas.width  = W * dpr;
+  canvas.height = H * dpr;
+  canvas.style.width  = W + 'px';
+  canvas.style.height = H + 'px';
+
+  const ctx = canvas.getContext('2d');
+  ctx.scale(dpr, dpr);
+  ctx.clearRect(0, 0, W, H);
+
+  const PAD_L = 36, PAD_R = 12, PAD_T = 16, PAD_B = 28;
+  const gW = W - PAD_L - PAD_R;
+  const gH = H - PAD_T - PAD_B;
+
+  const maxCP = Math.max(...data.map(r => r.cp), 40);
+  const minCP = 0;
+  const range = maxCP - minCP || 1;
+
+  // 目安ライン（20秒・40秒）
+  [20, 40].forEach(val => {
+    if (val > maxCP) return;
+    const y = PAD_T + gH - (val / range) * gH;
+    ctx.setLineDash([4, 4]);
+    ctx.strokeStyle = val === 40 ? '#5fb3b0' : '#ddd';
+    ctx.lineWidth = 1;
+    ctx.beginPath();
+    ctx.moveTo(PAD_L, y);
+    ctx.lineTo(W - PAD_R, y);
+    ctx.stroke();
+    ctx.setLineDash([]);
+    ctx.font = '10px sans-serif';
+    ctx.fillStyle = val === 40 ? '#5fb3b0' : '#aaa';
+    ctx.fillText(val + '秒', 2, y + 3);
+  });
+
+  // 折れ線
+  const step = gW / Math.max(data.length - 1, 1);
+  const pts = data.map((r, i) => ({
+    x: PAD_L + i * step,
+    y: PAD_T + gH - ((r.cp - minCP) / range) * gH,
+  }));
+
+  // グラデーション塗り
+  const grad = ctx.createLinearGradient(0, PAD_T, 0, PAD_T + gH);
+  grad.addColorStop(0, 'rgba(95,179,176,0.25)');
+  grad.addColorStop(1, 'rgba(95,179,176,0)');
+  ctx.beginPath();
+  ctx.moveTo(pts[0].x, PAD_T + gH);
+  pts.forEach(p => ctx.lineTo(p.x, p.y));
+  ctx.lineTo(pts[pts.length-1].x, PAD_T + gH);
+  ctx.closePath();
+  ctx.fillStyle = grad;
+  ctx.fill();
+
+  // 線
+  ctx.beginPath();
+  ctx.strokeStyle = '#5fb3b0';
+  ctx.lineWidth = 2;
+  ctx.lineJoin = 'round';
+  pts.forEach((p, i) => i === 0 ? ctx.moveTo(p.x, p.y) : ctx.lineTo(p.x, p.y));
+  ctx.stroke();
+
+  // 点
+  pts.forEach((p, i) => {
+    ctx.beginPath();
+    ctx.arc(p.x, p.y, 4, 0, Math.PI * 2);
+    ctx.fillStyle = '#fff';
+    ctx.fill();
+    ctx.strokeStyle = '#5fb3b0';
+    ctx.lineWidth = 2;
+    ctx.stroke();
+  });
+
+  // X軸ラベル（日付）
+  ctx.font = '10px sans-serif';
+  ctx.fillStyle = '#aaa';
+  ctx.textAlign = 'center';
+  const labelStep = Math.ceil(data.length / 7);
+  data.forEach((r, i) => {
+    if (i % labelStep !== 0 && i !== data.length - 1) return;
+    ctx.fillText(formatDate(r.date), PAD_L + i * step, H - 6);
+  });
+
+  // 最新値ラベル
+  const last = pts[pts.length - 1];
+  const lastVal = data[data.length - 1].cp;
+  ctx.font = 'bold 12px sans-serif';
+  ctx.fillStyle = '#1e3a5f';
+  ctx.textAlign = 'center';
+  ctx.fillText(lastVal + '秒', last.x, last.y - 10);
+}
+
+function renderChart7(records) {
+  drawChart('cpChart', 'chartEmpty', records, 7);
+}
+
+function renderChart28(records) {
+  drawChart('cpChart28', 'chartEmpty28', records, 28);
+}
+
+// ============================================================
+// タブ切り替え
+// ============================================================
+function switchTab(name) {
+  document.querySelectorAll('.tab-btn').forEach((btn, i) => {
+    btn.classList.toggle('active', btn.getAttribute('onclick').includes(name));
+  });
+  document.querySelectorAll('.tab-panel').forEach(p => {
+    p.classList.toggle('active', p.id === 'tab-' + name);
+  });
+  if (name === 'record') {
+    setTimeout(() => renderChart28(loadRecords()), 50);
+  }
+}
+
+// ============================================================
+// 体調更新（今日タブ）
+// ============================================================
+function updateCondition(val) {
+  obProfile.condition = val;
+  saveProfile();
+
+  // 選択状態を反映
+  document.querySelectorAll('#todayCondList .ob-cond-item').forEach(el => {
+    el.classList.toggle('selected', el.dataset.val === val);
+  });
+
+  // 警告メッセージ
+  const warn = document.getElementById('todayCondWarn');
+  const condWarnMap = {
+    good:   { show: false, text: '' },
+    mild:   { show: true,  bg: '#fff8e6', border: 'var(--gold)',
+              text: '😐 <b>やや不調</b>：就寝前ルーティンを優先してください。CO2インターバルなど負荷の高い練習は体調に応じて加減してください。' },
+    bad:    { show: true,  bg: 'var(--lred)', border: 'var(--red)',
+              text: '😪 <b>不調</b>：今日は小さな息止め（回復呼吸エクササイズ）と誘導音声を中心にして、無理しないでください。' },
+    attack: { show: true,  bg: 'var(--lred)', border: 'var(--red)',
+              text: '🚨 <b>強いいびき・無呼吸を指摘された場合</b>：まず医療機関での睡眠検査をご検討ください。このプログラムは診断・治療の代わりにはなりません。' },
+  };
+  const w = condWarnMap[val];
+  if (w && w.show) {
+    warn.style.display = 'block';
+    warn.style.background = w.bg;
+    warn.style.borderLeft = `3px solid ${w.border}`;
+    warn.innerHTML = w.text;
+  } else {
+    warn.style.display = 'none';
+  }
+
+  // プログラムタブのバナーも更新
+  showConditionBanner();
+  renderProgramCard(loadRecords());
+}
+
+function renderTodayCondCard() {
+  // 今日タブの体調カードに保存済みの選択を反映
+  if (!obProfile.condition) return;
+  document.querySelectorAll('#todayCondList .ob-cond-item').forEach(el => {
+    el.classList.toggle('selected', el.dataset.val === obProfile.condition);
+  });
+  // 警告も反映
+  updateCondition(obProfile.condition);
+}
+
+// ============================================================
+// タイマー
+// ============================================================
+
+function mkPhases(n, defs) {
+  return Array.from({length: n}, (_, i) => defs.map(([lf, desc, secs, icon]) => ({
+    label: typeof lf === 'function' ? lf(i) : lf, desc, secs, icon
+  }))).flat();
+}
+const EXERCISES = {
+  breathe_light_4: {
+    name: 'ブリーズライト（4分）',
+    phases: [
+      { label: 'ブリーズライト', desc: '「少し吸い足りない」感覚を保ちながら鼻呼吸', secs: 240, icon: '🌬️' },
+    ],
+    loop: false,
+  },
+  breath_hold_5: {
+    name: '小さな息止め × 10回',
+    phases: mkPhases(10, [
+      [i=>'息止め（'+(i+1)+'/10回目）','鼻をつまんで5秒止める',5,'🤏'],
+      [i=>'鼻呼吸（'+(i+1)+'/10回目）','普通に鼻で呼吸する',15,'👃'],
+    ]),
+    loop: false,
+  },
+  walking_recovery: {
+    name: '歩行中の回復呼吸エクササイズ（6セット）',
+    phases: mkPhases(6, [
+      [i=>'歩く（'+(i+1)+'/6セット目）','鼻をつまんで最大10歩歩く。終わったら「次へ」を押す',-1,'🚶'],
+      [i=>'鼻呼吸・休憩（'+(i+1)+'/6セット目）','指を離して鼻から静かに吸い、普通に鼻呼吸する',40,'😮‍💨'],
+    ]),
+    loop: false,
+  },
+  nose_clear: {
+    name: '鼻づまり解消エクササイズ（5回）',
+    phases: mkPhases(5, [
+      [i=>'息止め＋頭を振る（'+(i+1)+'/5回目）','鼻をつまんで頭を上下に振る',15,'👃'],
+      [i=>'鼻呼吸（'+(i+1)+'/5回目）','細く静かに鼻から吸って普通に呼吸',40,'😮‍💨'],
+    ]),
+    loop: false,
+  },
+  slow_breathing: {
+    name: 'スローブリージング 4-6（5分）',
+    phases: [
+      { label: 'スローブリージング', desc: '鼻から4秒吸って6秒吐く。吸うより長く吐くことだけ意識する', secs: 300, icon: '🌊' },
+    ],
+    loop: false,
+  },
+  bedtime_routine: {
+    name: '就寝前ルーティン',
+    phases: [
+      { label: '鼻づまり解消エクササイズ', desc: '鼻をつまんで頭を振る→離して鼻呼吸→30秒休憩を5回', secs: 300, icon: '👃' },
+      { label: 'スローブリージング', desc: '鼻から4秒吸って6秒吐く。「安全である」と脳に伝える呼吸', secs: 300, icon: '🌊' },
+      { label: '口テープを装着', desc: 'MyoTapeを唇の中央に軽く貼る。不安な場合は数分このまま様子を見る', secs: 120, icon: '🩹' },
+    ],
+    loop: false,
+  },
+  interval_set: {
+    name: 'CO2インターバル 1セット',
+    phases: [
+      { label: 'CP測定', desc: 'セット前のCPを測定して記録しておく', secs: 60,  icon: '📏' },
+      { label: 'ブリーズライト 1回目', desc: '「少し吸い足りない」感覚を保ちながら鼻呼吸', secs: 240, icon: '🌬️' },
+      { label: '休憩 1回目', desc: '普通に鼻呼吸して休む', secs: 60,  icon: '😌' },
+      { label: 'ブリーズライト 2回目', desc: '「少し吸い足りない」感覚を保ちながら鼻呼吸', secs: 240, icon: '🌬️' },
+      { label: '休憩 2回目', desc: '普通に鼻呼吸して休む', secs: 60,  icon: '😌' },
+      { label: 'ブリーズライト 3回目', desc: '「少し吸い足りない」感覚を保ちながら鼻呼吸', secs: 240, icon: '🌬️' },
+      { label: '休憩 3回目', desc: '普通に鼻呼吸して休む', secs: 60,  icon: '😌' },
+      { label: 'ブリーズライト 4回目', desc: '「少し吸い足りない」感覚を保ちながら鼻呼吸', secs: 240, icon: '🌬️' },
+      { label: 'CP測定', desc: 'セット後のCPを測定して比較する', secs: 60,  icon: '📏' },
+    ],
+    loop: false,
+  },
+};
+
+let timer = {
+  exKey:      null,
+  phases:     [],
+  phaseIdx:   0,
+  remaining:  0,
+  totalSecs:  0,
+  elapsed:    0,
+  running:    false,
+  interval:   null,
+};
+
+function selectExercise(key) {
+  // 選択状態
+  document.querySelectorAll('#timerExList .ob-cond-item').forEach(el => {
+    el.classList.toggle('selected', el.dataset.ex === key);
+  });
+
+  timerReset();
+  const ex = EXERCISES[key];
+  timer.exKey    = key;
+  timer.phases   = ex.phases;
+  timer.phaseIdx = 0;
+  timer.remaining = ex.phases[0].secs;
+  timer.totalSecs = ex.phases.reduce((s, p) => s + p.secs, 0);
+  timer.elapsed   = 0;
+
+  document.getElementById('timerCard').style.display = 'block';
+  document.getElementById('timerExName').textContent = ex.name;
+
+  // 最初のフェーズが手動かどうかで表示切り替え
+  if (ex.phases[0] && ex.phases[0].secs === -1) {
+    timerShowManual();
+  } else {
+    timerShowAuto();
+    document.getElementById('timerStartBtn').textContent = '▶ スタート';
+    document.getElementById('timerStartBtn').style.background = 'var(--teal)';
+  }
+  timerRenderPhase();
+  timerRenderSteps();
+}
+
+function timerStartPause() {
+  if (!timer.exKey) return;
+
+  // 手動フェーズ中はスタート/一時停止ではなく次へボタンで操作
+  const phase = timer.phases[timer.phaseIdx];
+  if (phase && phase.secs === -1) return;
+
+  if (timer.running) {
+    clearInterval(timer.interval);
+    timer.running = false;
+    document.getElementById('timerStartBtn').textContent = '▶ 再開';
+  } else {
+    timer.running = true;
+    document.getElementById('timerStartBtn').textContent = '⏸ 一時停止';
+    timerTick();
+  }
+}
+
+function timerTick() {
+  timer.interval = setInterval(() => {
+    timer.remaining--;
+    timer.elapsed++;
+    timerRenderPhase();
+
+    if (timer.remaining <= 0) {
+      clearInterval(timer.interval);
+      timer.running = false;
+      timerAdvancePhase();
+    }
+  }, 1000);
+}
+
+function timerManualNext() {
+  // 手動フェーズ（歩くフェーズ）で「次へ」を押した
+  const phase = timer.phases[timer.phaseIdx];
+  if (!phase || phase.secs !== -1) return;
+  timer.elapsed += 10; // 推定10秒として加算
+  timerAdvancePhase();
+}
+
+function timerAdvancePhase() {
+  clearInterval(timer.interval);
+  timer.phaseIdx++;
+
+  if (timer.phaseIdx >= timer.phases.length) {
+    // 完了
+    timer.running = false;
+    const startBtn = document.getElementById('timerStartBtn');
+    const nextBtn  = document.getElementById('timerNextBtn');
+    startBtn.textContent = '✓ 完了';
+    startBtn.style.background = 'var(--navy)';
+    startBtn.style.display = 'block';
+    if (nextBtn) nextBtn.style.display = 'none';
+    document.getElementById('timerPhaseLabel').textContent = '完了！';
+    document.getElementById('timerPhaseDesc').textContent = 'お疲れ様でした。';
+    document.getElementById('timerDisplay').textContent = '00:00';
+    document.getElementById('timerBar').style.width = '100%';
+    timerRenderSteps();
+    if (navigator.vibrate) navigator.vibrate([200, 100, 200]);
+    return;
+  }
+
+  const next = timer.phases[timer.phaseIdx];
+  if (navigator.vibrate) navigator.vibrate(100);
+
+  if (next.secs === -1) {
+    // 次も手動フェーズ
+    timerRenderPhase();
+    timerRenderSteps();
+    timerShowManual();
+  } else {
+    // 通常フェーズ
+    timer.remaining = next.secs;
+    timerRenderPhase();
+    timerRenderSteps();
+    timerShowAuto();
+    timer.running = true;
+    document.getElementById('timerStartBtn').textContent = '⏸ 一時停止';
+    timerTick();
+  }
+}
+
+function timerShowManual() {
+  // 手動フェーズUI：「次へ」ボタンを前面に出す
+  const startBtn = document.getElementById('timerStartBtn');
+  const nextBtn  = document.getElementById('timerNextBtn');
+  startBtn.style.display = 'none';
+  if (nextBtn) nextBtn.style.display = 'flex';
+  document.getElementById('timerDisplay').textContent = '——';
+}
+
+function timerShowAuto() {
+  const startBtn = document.getElementById('timerStartBtn');
+  const nextBtn  = document.getElementById('timerNextBtn');
+  startBtn.style.display = 'block';
+  if (nextBtn) nextBtn.style.display = 'none';
+}
+
+// ============================================================
+// CPタイマー
+// ============================================================
+var cpTimer = { running: false, start: 0, elapsed: 0, interval: null };
+
+function cpTimerToggle() {
+  var btn = document.getElementById('cpTimerBtn');
+  if (!cpTimer.running) {
+    // スタート
+    cpTimer.start = Date.now() - cpTimer.elapsed;
+    cpTimer.running = true;
+    btn.textContent = '✋ ストップ';
+    btn.style.background = 'var(--red)';
+    cpTimer.interval = setInterval(function() {
+      cpTimer.elapsed = Date.now() - cpTimer.start;
+      var sec = (cpTimer.elapsed / 1000).toFixed(1);
+      document.getElementById('cpTimerDisplay').textContent = sec;
+    }, 100);
+  } else {
+    // ストップ → 秒数をCP入力欄に自動入力
+    clearInterval(cpTimer.interval);
+    cpTimer.running = false;
+    var sec = Math.round(cpTimer.elapsed / 1000);
+    document.getElementById('cpTimerDisplay').textContent = (cpTimer.elapsed / 1000).toFixed(1);
+    document.getElementById('cpInput').value = sec;
+    btn.textContent = '✅ ' + sec + '秒 → 記録する';
+    btn.style.background = 'var(--navy)';
+    btn.onclick = function() {
+      recordCP();
+      cpTimerReset();
+    };
+    if (navigator.vibrate) navigator.vibrate(100);
+  }
+}
+
+function switchCpMode(mode) {
+  const isTimer = mode === 'timer';
+  document.getElementById('cpTimerArea').style.display  = isTimer ? 'block' : 'none';
+  document.getElementById('cpManualArea').style.display = isTimer ? 'none'  : 'block';
+  document.getElementById('cpModeTimer').style.cssText  = 'flex:1;background:none;border:none;padding:9px 0;font-size:13px;font-weight:700;cursor:pointer;margin-bottom:-2px;' + (isTimer ? 'color:var(--teal);border-bottom:2px solid var(--teal);' : 'color:var(--gray);border-bottom:2px solid transparent;');
+  document.getElementById('cpModeManual').style.cssText = 'flex:1;background:none;border:none;padding:9px 0;font-size:13px;font-weight:700;cursor:pointer;margin-bottom:-2px;' + (!isTimer ? 'color:var(--teal);border-bottom:2px solid var(--teal);' : 'color:var(--gray);border-bottom:2px solid transparent;');
+  if (isTimer) cpTimerReset();
+}
+
+function cpTimerReset() {
+  clearInterval(cpTimer.interval);
+  cpTimer.running = false;
+  cpTimer.elapsed = 0;
+  document.getElementById('cpTimerDisplay').textContent = '0.0';
+  var btn = document.getElementById('cpTimerBtn');
+  btn.textContent = '▶ スタート';
+  btn.style.background = 'var(--teal)';
+  btn.onclick = cpTimerToggle;
+}
+
+function toggleAudio(id) {
+  const card = document.getElementById(id);
+  const player = card.querySelector('.audio-player-wrap');
+  const arrow  = card.querySelector('.audio-arrow');
+  const isOpen = player.style.display !== 'none';
+  player.style.display = isOpen ? 'none' : 'block';
+  arrow.style.transform  = isOpen ? '' : 'rotate(90deg)';
+  arrow.textContent      = isOpen ? '▶' : '▼';
+}
+
+function jumpToTimer(key) {
+  switchTab('timer');
+  // エクサリストの選択状態を反映してからセット
+  setTimeout(() => selectExercise(key), 50);
+}
+
+function timerReset() {
+  clearInterval(timer.interval);
+  timer.running  = false;
+  timer.phaseIdx = 0;
+  timer.elapsed  = 0;
+  if (timer.exKey && timer.phases[0]) {
+    timer.remaining = timer.phases[0].secs;
+  }
+  const startBtn = document.getElementById('timerStartBtn');
+  const nextBtn  = document.getElementById('timerNextBtn');
+  if (startBtn) { startBtn.textContent = '▶ スタート'; startBtn.style.background = 'var(--teal)'; }
+
+  // 最初のフェーズが手動かどうかで表示切り替え
+  if (timer.phases[0] && timer.phases[0].secs === -1) {
+    timerShowManual();
+  } else {
+    timerShowAuto();
+  }
+  timerRenderPhase();
+  timerRenderSteps();
+}
+
+function timerRenderPhase() {
+  const phase = timer.phases[timer.phaseIdx];
+  if (!phase) return;
+  const m = Math.floor(timer.remaining / 60);
+  const s = timer.remaining % 60;
+  document.getElementById('timerDisplay').textContent =
+    `${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`;
+  document.getElementById('timerPhaseLabel').textContent = phase.label;
+  document.getElementById('timerPhaseDesc').textContent  = phase.desc;
+
+  // プログレスバー（全体）
+  const pct = timer.totalSecs > 0 ? (timer.elapsed / timer.totalSecs) * 100 : 0;
+  document.getElementById('timerBar').style.width = Math.min(pct, 100) + '%';
+
+  // 進捗テキスト
+  const totalM = Math.floor(timer.totalSecs / 60);
+  const elM    = Math.floor(timer.elapsed / 60);
+  document.getElementById('timerProgress').textContent =
+    `経過 ${elM}分 / 合計 ${totalM}分`;
+}
+
+function timerRenderSteps() {
+  const el = document.getElementById('timerSteps');
+  if (!timer.phases.length) { el.innerHTML = ''; return; }
+  el.innerHTML = timer.phases.map((p, i) => {
+    const cls = i < timer.phaseIdx ? 'done' : i === timer.phaseIdx ? 'current' : 'upcoming';
+    const check = i < timer.phaseIdx ? '✓' : i === timer.phaseIdx ? '▶' : '·';
+    const m = Math.floor(p.secs / 60);
+    const s = p.secs % 60;
+    const dur = m > 0 ? `${m}分${s > 0 ? s+'秒' : ''}` : `${s}秒`;
+    return `<div class="timer-step-row ${cls}">
+      <span class="timer-step-icon">${check}</span>
+      <span style="flex:1;">${p.icon} ${p.label}</span>
+      <span style="color:var(--gray);font-size:12px;">${dur}</span>
+    </div>`;
+  }).join('');
+}
+
+// ============================================================
+// オンボーディング
+// ============================================================
+const OB_KEY = 'sleep_ob_done';
+const OB_PROFILE_KEY = 'sleep_profile';
+
+let obCurrentStep = 0;
+const OB_TOTAL = 5;
+
+// プロファイル（禁忌・体調）
+let obProfile = {
+  contraindications: [],  // 禁忌リスト
+  hasContra: false,       // 禁忌ありフラグ
+  hasPreg1: false,        // 妊娠初期フラグ
+  condition: null,        // 昨夜の睡眠
+};
+
+function loadProfile() {
+  try {
+    const p = JSON.parse(localStorage.getItem(OB_PROFILE_KEY));
+    if (p) obProfile = { ...obProfile, ...p };
+  } catch {}
+}
+
+function saveProfile() {
+  localStorage.setItem(OB_PROFILE_KEY, JSON.stringify(obProfile));
+}
+
+function showOnboarding() {
+  document.getElementById('onboardingOverlay').classList.remove('hidden');
+  obCurrentStep = 0;
+  // チェックボックスをリセット
+  document.querySelectorAll('input[name=contra]').forEach(c => c.checked = false);
+  document.getElementById('contraResult').className = 'ob-contra-result';
+  document.getElementById('contraResult').innerHTML = '';
+  const checkBtn = document.getElementById('contraCheckBtn');
+  const nextBtn  = document.getElementById('contraNextBtn');
+  if (checkBtn) checkBtn.style.display = 'block';
+  if (nextBtn)  nextBtn.style.display  = 'none';
+  // 体調リセット
+  document.querySelectorAll('.ob-cond-item').forEach(el => el.classList.remove('selected'));
+  document.getElementById('condWarn').className = 'ob-cond-warn';
+  document.getElementById('condWarn').innerHTML = '';
+  const condNextBtn = document.getElementById('condNextBtn');
+  if (condNextBtn) { condNextBtn.style.opacity = '0.4'; condNextBtn.style.pointerEvents = 'none'; }
+  obProfile.condition = null;
+  renderObStep();
+}
+
+function resetOnboarding() {
+  localStorage.removeItem(OB_KEY);
+  showOnboarding();
+}
+
+function obNext() {
+  obCurrentStep++;
+  renderObStep();
+}
+
+function obBack() {
+  if (obCurrentStep > 0) { obCurrentStep--; renderObStep(); }
+}
+
+function renderObStep() {
+  // ステップ表示切り替え
+  document.querySelectorAll('.ob-step').forEach((el, i) => {
+    el.classList.toggle('hidden', i !== obCurrentStep);
+  });
+  // Step 1 に戻ったらボタン状態をリセット
+  if (obCurrentStep === 1) {
+    const checkBtn = document.getElementById('contraCheckBtn');
+    const nextBtn  = document.getElementById('contraNextBtn');
+    const resEl    = document.getElementById('contraResult');
+    if (checkBtn) { checkBtn.style.display = 'block'; }
+    if (nextBtn)  { nextBtn.style.display  = 'none'; }
+    if (resEl)    { resEl.className = 'ob-contra-result'; resEl.innerHTML = ''; }
+  }
+  // ドット更新
+  for (let i = 0; i < OB_TOTAL; i++) {
+    const dot = document.getElementById('obDot' + i);
+    if (!dot) continue;
+    dot.className = 'ob-step-dot ' + (i < obCurrentStep ? 'done' : i === obCurrentStep ? 'active' : '');
+  }
+  // STEP 4のサマリーを描画
+  if (obCurrentStep === 4) renderObSummary();
+}
+
+// STEP 1: 禁忌チェック → 次へ
+function obNextContra() {
+  const checked = [...document.querySelectorAll('input[name=contra]:checked')].map(c => c.value);
+  obProfile.contraindications = checked;
+  obProfile.hasContra = checked.some(v => ['bp','heart','anxiety'].includes(v));
+  obProfile.hasPreg1  = checked.includes('preg1');
+
+  const resEl = document.getElementById('contraResult');
+  if (obProfile.hasPreg1) {
+    resEl.className = 'ob-contra-result show warn';
+    resEl.innerHTML = '⚠ <b>妊娠初期の方</b>：呼吸エクササイズは行わないでください。医師にご相談の上、安定期に入ってから再度ご確認ください。';
+  } else if (checked.includes('osa')) {
+    resEl.className = 'ob-contra-result show warn';
+    resEl.innerHTML = '⚠ <b>未治療の睡眠時無呼吸の可能性</b>として記録しました。まず医療機関での睡眠検査をご検討ください。プログラムは <b>Level 3（ブリーズライトのみ）まで</b> で進めてください。';
+    obProfile.hasContra = true;
+  } else if (obProfile.hasContra) {
+    resEl.className = 'ob-contra-result show warn';
+    resEl.innerHTML = '⚠ <b>禁忌あり</b>として記録しました。プログラムは <b>Level 3（ブリーズライトのみ）まで</b> で進めてください。マキシマムポーズ・長い息止めは行わないでください。';
+
+  } else if (checked.includes('preg')) {
+    resEl.className = 'ob-contra-result show warn';
+    resEl.innerHTML = '⚠ <b>妊娠中期（第2三半期）</b>：ブリーズライトと鼻呼吸は可。長い息止め・マキシマムポーズ・口テープは避けてください。必ず担当医にご確認ください。';
+    obProfile.hasContra = true;
+  } else if (checked.includes('cpap')) {
+    resEl.className = 'ob-contra-result show ok';
+    resEl.innerHTML = '✓ <b>CPAP・マウスピース使用中</b>として記録しました。装置は継続してご使用ください。呼吸エクササイズは併用可能です。口テープは緊急時に口を開けられるタイプをお選びください。';
+  } else {
+    resEl.className = 'ob-contra-result show ok';
+    resEl.innerHTML = '✓ 禁忌なしとして記録しました。CPが15秒以上になったら Level 4（マキシマムポーズあり）に進めます。';
+  }
+
+  // 確認ボタンを隠し、次へボタンを表示
+  document.getElementById('contraCheckBtn').style.display = 'none';
+  document.getElementById('contraNextBtn').style.display = 'block';
+}
+
+// STEP 2: 体調選択
+function selectCondition(val) {
+  obProfile.condition = val;
+  document.querySelectorAll('.ob-cond-item').forEach(el => {
+    el.classList.toggle('selected', el.dataset.val === val);
+  });
+
+  const warn = document.getElementById('condWarn');
+  const btn  = document.getElementById('condNextBtn');
+
+  if (val === 'attack') {
+    warn.className = 'ob-cond-warn show';
+    warn.innerHTML = '🚨 <b>大きないびきや呼吸停止を指摘されている場合</b>：まず医療機関での睡眠検査をご検討ください。このプログラムは補助的にご利用ください。';
+  } else if (val === 'bad') {
+    warn.className = 'ob-cond-warn show';
+    warn.innerHTML = '😪 <b>夜中に何度も目が覚めた場合</b>：今日は回復呼吸エクササイズと誘導音声を中心にして、CO2インターバルなど負荷の高い練習は休んでください。';
+  } else {
+    warn.className = 'ob-cond-warn';
+    warn.innerHTML = '';
+  }
+
+  btn.style.opacity = '1';
+  btn.style.pointerEvents = 'auto';
+}
+
+// STEP 4: サマリー
+function renderObSummary() {
+  const contraLabel = obProfile.hasPreg1
+    ? '妊娠初期 — 呼吸エクササイズは行わないでください'
+    : obProfile.contraindications.includes('osa')
+      ? '未治療の睡眠時無呼吸の可能性（Level 3 で進める・睡眠検査推奨）'
+      : obProfile.hasContra
+        ? '禁忌あり（Level 3 で進める）'
+        : obProfile.contraindications.includes('preg')
+          ? '妊娠中期〜 — ブリーズライト可・長い息止めNG'
+          : obProfile.contraindications.includes('cpap')
+            ? 'CPAP・マウスピース使用中（併用可）'
+            : '禁忌なし（全Level対応）';
+
+  const condMap = {
+    good:   '😊 良好 — 今日のプログラムをフルで実施',
+    mild:   '😐 やや不調 — 就寝前ルーティンを優先',
+    bad:    '😪 不調 — 回復呼吸エクササイズと誘導音声を中心に',
+    attack: '🚨 強いいびき・無呼吸を指摘 — 睡眠検査を推奨',
+  };
+  const condLabel = condMap[obProfile.condition] || '未選択';
+
+  document.getElementById('obSummary').innerHTML = `
+    <div class="ob-summary-row">
+      <span class="ob-summary-label">禁忌確認</span>
+      <span class="ob-summary-val">${contraLabel}</span>
+    </div>
+    <div class="ob-summary-row">
+      <span class="ob-summary-label">昨夜の睡眠</span>
+      <span class="ob-summary-val">${condLabel}</span>
+    </div>
+    <div class="ob-summary-note">
+      ※ 睡眠の状態は毎日「今日」タブの設定ボタンから更新できます。<br>
+      ※ データはこのブラウザに保存されます。機種変更時は引き継ぎできません。
+    </div>
+    ${obProfile.hasPreg1 ? '<div style="margin-top:12px;padding:12px 14px;background:var(--lred);border-left:3px solid var(--red);border-radius:4px;font-size:13px;color:var(--navy);line-height:1.9;"><b>妊娠初期の方へ：</b>安定期に入るまで呼吸エクササイズはお控えください。安定期になりましたら担当医にご相談の上、改めてお使いください。</div>' : ''}
+    `;
+}
+
+// 完了 → アプリ起動
+function obFinish() {
+  saveProfile();
+  localStorage.setItem(OB_KEY, '1');
+  document.getElementById('onboardingOverlay').classList.add('hidden');
+  // 体調バナーをヘッダー下に表示
+  showConditionBanner();
+  renderAll();
+}
+
+// 体調バナー（今日タブの最上部）
+function showConditionBanner() {
+  const profile = obProfile;
+  if (!profile.condition) return;
+  const condMap = {
+    good:   { icon: '😊', text: '昨夜の睡眠：良好', color: 'var(--lteal)', border: 'var(--teal)' },
+    mild:   { icon: '😐', text: '昨夜の睡眠：やや不調 — 就寝前ルーティンを優先して', color: '#fff8e6', border: 'var(--gold)' },
+    bad:    { icon: '😪', text: '昨夜の睡眠：不調 — 回復呼吸エクササイズと誘導音声を', color: 'var(--lred)', border: 'var(--red)' },
+    attack: { icon: '🚨', text: '強いいびき・無呼吸を指摘 — 睡眠検査をご検討ください', color: 'var(--lred)', border: 'var(--red)' },
+  };
+  const c = condMap[profile.condition];
+  if (!c) return;
+
+  // 既存バナーがあれば削除
+  const old = document.getElementById('condBanner');
+  if (old) old.remove();
+
+  const banner = document.createElement('div');
+  banner.id = 'condBanner';
+  banner.style.cssText = `background:${c.color};border-left:4px solid ${c.border};padding:10px 16px;font-size:13.5px;color:var(--navy);display:flex;align-items:center;justify-content:space-between;gap:12px;`;
+  banner.innerHTML = `
+    <span>${c.icon} ${c.text}</span>
+    <button onclick="showOnboarding()" style="background:none;border:1px solid currentColor;border-radius:4px;padding:3px 10px;font-size:11px;color:inherit;cursor:pointer;opacity:0.7;">更新</button>`;
+
+  // 今日タブの先頭に挿入
+  const todayTab = document.getElementById('tab-today');
+  todayTab.insertBefore(banner, todayTab.firstChild);
+}
+
+// ============================================================
+// 初期化
+// ============================================================
+loadProfile();
+if (!localStorage.getItem(OB_KEY)) {
+  showOnboarding();
+} else {
+  showConditionBanner();
+}
+renderAll();
+renderTodayCondCard();
+window.addEventListener('resize', () => {
+  const records = loadRecords();
+  renderChart7(records);
+  if (document.getElementById('tab-record').classList.contains('active')) {
+    renderChart28(records);
+  }
+});
+</script>
+</body>
+</html>
