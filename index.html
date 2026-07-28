@@ -2042,7 +2042,7 @@ function timerShowManual() {
   const nextBtn  = document.getElementById('timerNextBtn');
   startBtn.style.display = 'none';
   if (nextBtn) nextBtn.style.display = 'flex';
-  document.getElementById('timerDisplay').textContent = '——';
+  document.getElementById('timerDisplay').textContent = '10歩';
 }
 
 function timerShowAuto() {
@@ -2153,10 +2153,14 @@ function timerReset() {
 function timerRenderPhase() {
   const phase = timer.phases[timer.phaseIdx];
   if (!phase) return;
-  const m = Math.floor(timer.remaining / 60);
-  const s = timer.remaining % 60;
-  document.getElementById('timerDisplay').textContent =
-    `${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`;
+  if (timer.remaining === -1) {
+    document.getElementById('timerDisplay').textContent = '10歩';
+  } else {
+    const m = Math.floor(timer.remaining / 60);
+    const s = timer.remaining % 60;
+    document.getElementById('timerDisplay').textContent =
+      `${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`;
+  }
   document.getElementById('timerPhaseLabel').textContent = phase.label;
   document.getElementById('timerPhaseDesc').textContent  = phase.desc;
 
