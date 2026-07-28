@@ -983,8 +983,8 @@ canvas { display: block; max-width: 100%; }
         <div class="ob-cond-item" onclick="selectExercise('nose_clear')" data-ex="nose_clear">
           <div class="ob-cond-icon">👃</div>
           <div class="ob-cond-body">
-            <div class="ob-cond-title">鼻づまり解消エクササイズ（3〜5回）</div>
-            <div class="ob-cond-desc">鼻をつまんで頭を振る→離して鼻呼吸→30秒休憩を繰り返す。就寝前に行うと鼻呼吸で眠りやすくなる。</div>
+            <div class="ob-cond-title">鼻づまり解消エクササイズ（3〜6セット）</div>
+            <div class="ob-cond-desc">鼻をつまんで頭を振る→離して鼻呼吸→休憩を繰り返す。就寝前に行うと鼻呼吸で眠りやすくなる。</div>
           </div>
         </div>
 
@@ -1004,11 +1004,11 @@ canvas { display: block; max-width: 100%; }
           </div>
         </div>
 
-        <div class="ob-cond-item" onclick="selectExercise('interval_set')" data-ex="interval_set">
+        <div class="ob-cond-item" onclick="selectIntervalSet()" data-ex="interval_set" data-ex-alt="interval_set_mp">
           <div class="ob-cond-icon">🔄</div>
           <div class="ob-cond-body">
             <div class="ob-cond-title">CO2インターバル 1セット（約20分）</div>
-            <div class="ob-cond-desc">CP測定→BL4分→休憩1分×4セット→CP測定。Level 3・4向け。</div>
+            <div class="ob-cond-desc">CP測定→BL4分→休憩（禁忌あり：普通に休む／禁忌なし：鼻づまり解消の呼吸）×4セット→CP測定。Level 3・4向け。</div>
           </div>
         </div>
 
@@ -1237,7 +1237,7 @@ canvas { display: block; max-width: 100%; }
             <td style="padding:10px;border-bottom:1px solid var(--border);background:var(--lgray);font-weight:700;color:var(--navy);">15秒以上</td>
             <td style="padding:10px;border-bottom:1px solid var(--border);">
               <span style="background:#5fb3b0;color:#fff;border-radius:3px;padding:2px 8px;font-size:11px;font-weight:700;">Level 4</span><br>
-              <span style="font-size:12px;color:var(--gray);margin-top:4px;display:block;">BL＋マキシマムポーズ（MP）可</span>
+              <span style="font-size:12px;color:var(--gray);margin-top:4px;display:block;">BL＋鼻づまり解消の呼吸</span>
             </td>
             <td style="padding:10px;border-bottom:1px solid var(--border);">
               <span style="background:#3e7a9f;color:#fff;border-radius:3px;padding:2px 8px;font-size:11px;font-weight:700;">Level 3</span><br>
@@ -1346,14 +1346,14 @@ const LEVEL_DATA = {
       ['日中1回',          '口を閉じたまま歩く',                             '10分',     null],
       ['鼻づまり時',       '鼻づまり解消エクササイズ（就寝前・鼻が詰まっているとき）', '必要時',   'nose_clear'],
       ['就寝前',           '就寝前ルーティン（口テープ→誘導音声）', '約30分','bedtime_routine'],
-      ['夜中に目覚めたら', '回復呼吸エクササイズ＋誘導音声',                '随時',     'breath_hold_5'],
+      ['夜中に目覚めたら', 'ブリーズライトか誘導音声',                      '随時',     'breathe_light_4'],
     ],
     hasInterval: false,
   },
   3: {
     name: 'CO2インターバルを組む',
     cp: 'CP 15秒以上',
-    goal: 'CO2インターバルを1日3セット実施（禁忌あり：ブリーズライトのみ。禁忌なし：＋マキシマムポーズ）。',
+    goal: 'CO2インターバルを1日3セット実施（禁忌あり：休憩をはさむ。禁忌なし：鼻づまり解消の呼吸を加える）。',
     cls: 'lv-3',
     next: null,
     program: [
@@ -1510,7 +1510,7 @@ function renderProgramCard(records) {
   } else if (!hasContra && lv === 3) {
     noticeHTML = `
       <div style="background:var(--lteal);border:1px solid var(--teal);border-left:4px solid var(--teal);border-radius:4px;padding:14px 16px;font-size:13.5px;color:var(--navy);line-height:1.85;margin-bottom:16px;">
-        ✓ <b>CP ${rec.cp}秒（Level 3/4）× 禁忌なし</b>：ブリーズライト＋マキシマムポーズのセットで進めます。MPは呼吸が落ち着いてから次に進んでください。
+        ✓ <b>CP ${rec.cp}秒（Level 3/4）× 禁忌なし</b>：ブリーズライト＋鼻づまり解消の呼吸のセットで進めます。
       </div>`;
   } else if (hasContra && lv <= 2) {
     noticeHTML = `
@@ -1571,11 +1571,11 @@ function renderIntervalCard() {
   const stepsMP = [
     ['CP測定', 'cp-step', '開始前にCPを測る'],
     ['BL 4分', '',        'ブリーズライト（空気飢餓感を感じながら）'],
-    ['MP 1回', '',        'マキシマムポーズ（呼吸が落ち着いてから次へ）'],
+    ['鼻づまり解消', '',  '鼻をつまんで頭を上下に10〜15回ゆっくり振る'],
     ['BL 4分', '',        'ブリーズライト'],
-    ['MP 1回', '',        'マキシマムポーズ'],
+    ['鼻づまり解消', '',  '鼻をつまんで頭を上下に10〜15回ゆっくり振る'],
     ['BL 4分', '',        'ブリーズライト'],
-    ['MP 1回', '',        'マキシマムポーズ'],
+    ['鼻づまり解消', '',  '鼻をつまんで頭を上下に10〜15回ゆっくり振る'],
     ['BL 4分', '',        'ブリーズライト'],
     ['CP測定', 'cp-step', '終了後にCPを測る'],
   ];
@@ -1593,8 +1593,8 @@ function renderIntervalCard() {
   el.innerHTML =
     stepsHTML(stepsBase, '禁忌あり — ブリーズライトのみ（約20分）') +
     '<div style="height:20px;"></div>' +
-    stepsHTML(stepsMP, '禁忌なし — ブリーズライト＋マキシマムポーズ（約20分）') +
-    `<div class="interval-note">1日3セットが目標。セット後にCPが伸びていれば正しく行えています。<br>マキシマムポーズ後に呼吸が乱れる場合は息止め時間が長すぎです。少し短くしてください。</div>`;
+    stepsHTML(stepsMP, '禁忌なし — ブリーズライト＋鼻づまり解消の呼吸（約20分）') +
+    `<div class="interval-note">1日3セットが目標。セット後にCPが伸びていれば正しく行えています。<br>鼻づまり解消の呼吸中に息苦しさが強すぎる場合は、頭を振る回数を減らしてください。</div>`;
 }
 
 function renderRecordList(records) {
@@ -1836,10 +1836,10 @@ const EXERCISES = {
     loop: false,
   },
   nose_clear: {
-    name: '鼻づまり解消エクササイズ（5回）',
-    phases: mkPhases(5, [
-      [i=>'息止め＋頭を振る（'+(i+1)+'/5回目）','鼻をつまんで頭を上下に振る',15,'👃'],
-      [i=>'鼻呼吸（'+(i+1)+'/5回目）','細く静かに鼻から吸って普通に呼吸',40,'😮‍💨'],
+    name: '鼻づまり解消エクササイズ（3〜6セット）',
+    phases: mkPhases(6, [
+      [i=>'息止め＋頭を振る（'+(i+1)+'/6セット目）','鼻をつまんで頭を上下に振る',15,'👃'],
+      [i=>'鼻呼吸（'+(i+1)+'/6セット目）','細く静かに鼻から吸って普通に呼吸',40,'😮‍💨'],
     ]),
     loop: false,
   },
@@ -1859,7 +1859,7 @@ const EXERCISES = {
     loop: false,
   },
   interval_set: {
-    name: 'CO2インターバル 1セット',
+    name: 'CO2インターバル 1セット（禁忌あり）',
     phases: [
       { label: 'CP測定', desc: 'セット前のCPを測定して記録しておく', secs: 60,  icon: '📏' },
       { label: 'ブリーズライト 1回目', desc: '「少し吸い足りない」感覚を保ちながら鼻呼吸', secs: 240, icon: '🌬️' },
@@ -1868,6 +1868,21 @@ const EXERCISES = {
       { label: '休憩 2回目', desc: '普通に鼻呼吸して休む', secs: 60,  icon: '😌' },
       { label: 'ブリーズライト 3回目', desc: '「少し吸い足りない」感覚を保ちながら鼻呼吸', secs: 240, icon: '🌬️' },
       { label: '休憩 3回目', desc: '普通に鼻呼吸して休む', secs: 60,  icon: '😌' },
+      { label: 'ブリーズライト 4回目', desc: '「少し吸い足りない」感覚を保ちながら鼻呼吸', secs: 240, icon: '🌬️' },
+      { label: 'CP測定', desc: 'セット後のCPを測定して比較する', secs: 60,  icon: '📏' },
+    ],
+    loop: false,
+  },
+  interval_set_mp: {
+    name: 'CO2インターバル 1セット（禁忌なし）',
+    phases: [
+      { label: 'CP測定', desc: 'セット前のCPを測定して記録しておく', secs: 60,  icon: '📏' },
+      { label: 'ブリーズライト 1回目', desc: '「少し吸い足りない」感覚を保ちながら鼻呼吸', secs: 240, icon: '🌬️' },
+      { label: '鼻づまり解消 1回目', desc: '鼻をつまんで頭を上下に10〜15回ゆっくり振る', secs: 60,  icon: '👃' },
+      { label: 'ブリーズライト 2回目', desc: '「少し吸い足りない」感覚を保ちながら鼻呼吸', secs: 240, icon: '🌬️' },
+      { label: '鼻づまり解消 2回目', desc: '鼻をつまんで頭を上下に10〜15回ゆっくり振る', secs: 60,  icon: '👃' },
+      { label: 'ブリーズライト 3回目', desc: '「少し吸い足りない」感覚を保ちながら鼻呼吸', secs: 240, icon: '🌬️' },
+      { label: '鼻づまり解消 3回目', desc: '鼻をつまんで頭を上下に10〜15回ゆっくり振る', secs: 60,  icon: '👃' },
       { label: 'ブリーズライト 4回目', desc: '「少し吸い足りない」感覚を保ちながら鼻呼吸', secs: 240, icon: '🌬️' },
       { label: 'CP測定', desc: 'セット後のCPを測定して比較する', secs: 60,  icon: '📏' },
     ],
@@ -1886,10 +1901,17 @@ let timer = {
   interval:   null,
 };
 
-function selectExercise(key) {
-  // 選択状態
+function selectIntervalSet() {
+  // 禁忌の有無でCO2インターバルの構成を自動的に切り替える
+  const key = obProfile.hasContra ? 'interval_set' : 'interval_set_mp';
+  selectExercise(key, 'interval_set');
+}
+
+function selectExercise(key, highlightKey) {
+  // 選択状態（highlightKeyが指定されればそちらでハイライト。禁忌あり/なしで切り替わるカード用）
+  const hlKey = highlightKey || key;
   document.querySelectorAll('#timerExList .ob-cond-item').forEach(el => {
-    el.classList.toggle('selected', el.dataset.ex === key);
+    el.classList.toggle('selected', el.dataset.ex === hlKey);
   });
 
   timerReset();
@@ -2097,6 +2119,11 @@ function toggleAudio(id) {
 
 function jumpToTimer(key) {
   switchTab('timer');
+  // CO2インターバルは禁忌の有無で構成を自動的に切り替える
+  if (key === 'interval_set') {
+    setTimeout(() => selectIntervalSet(), 50);
+    return;
+  }
   // エクサリストの選択状態を反映してからセット
   setTimeout(() => selectExercise(key), 50);
 }
@@ -2276,7 +2303,7 @@ function obNextContra() {
     resEl.innerHTML = '✓ <b>CPAP・マウスピース使用中</b>として記録しました。装置は継続してご使用ください。呼吸エクササイズは併用可能です。口テープは緊急時に口を開けられるタイプをお選びください。';
   } else {
     resEl.className = 'ob-contra-result show ok';
-    resEl.innerHTML = '✓ 禁忌なしとして記録しました。CPが15秒以上になったら Level 4（マキシマムポーズあり）に進めます。';
+    resEl.innerHTML = '✓ 禁忌なしとして記録しました。CPが15秒以上になったら Level 4（ブリーズライト＋鼻づまり解消の呼吸）に進めます。';
   }
 
   // 確認ボタンを隠し、次へボタンを表示
