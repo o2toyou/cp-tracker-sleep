@@ -1000,7 +1000,7 @@ canvas { display: block; max-width: 100%; }
           <div class="ob-cond-icon">🌙</div>
           <div class="ob-cond-body">
             <div class="ob-cond-title">就寝前ルーティン（約8分）</div>
-            <div class="ob-cond-desc">口テープ装着→軽いブリーズライトの流れ。強い空気飢餓感は作らず、リラックスして入眠へ。</div>
+            <div class="ob-cond-desc">口テープ装着→誘導音声の流れ。声に合わせて呼吸しながら、そのまま眠りに入る。</div>
           </div>
         </div>
 
@@ -1048,7 +1048,7 @@ canvas { display: block; max-width: 100%; }
     </div>
 
     <!-- 誘導音声 -->
-    <div class="card">
+    <div class="card" id="guidedAudioCard">
       <div class="card-title">GUIDED AUDIO　誘導音声</div>
 
       <div style="font-size:13px;color:var(--gray);margin-bottom:14px;line-height:1.8;">
@@ -1056,7 +1056,7 @@ canvas { display: block; max-width: 100%; }
       </div>
 
       <!-- 就寝前 -->
-      <div style="font-size:12px;font-weight:700;color:var(--teal);letter-spacing:0.1em;margin-bottom:8px;">🌙 就寝前・寝つき用</div>
+      <div id="bedtimeAudioSection" style="font-size:12px;font-weight:700;color:var(--teal);letter-spacing:0.1em;margin-bottom:8px;">🌙 就寝前・寝つき用</div>
       <div style="display:flex;flex-direction:column;gap:8px;margin-bottom:16px;">
 
         <div id="audio-sleep-piano" style="border:1px solid var(--border);border-radius:6px;overflow:hidden;">
@@ -1330,7 +1330,7 @@ const LEVEL_DATA = {
       ['または',           '歩行中の回復呼吸エクササイズ（最大10歩×6回）', '5〜10分',  'walking_recovery'],
       ['散歩・移動',       '口を閉じて鼻呼吸で歩く',                        '自然に',   null],
       ['鼻づまり時',       '鼻づまり解消エクササイズ',                      '必要時',   'nose_clear'],
-      ['就寝前',           '就寝前ルーティン（口テープ→軽いブリーズライト）', '約8分',   'bedtime_routine'],
+      ['就寝前',           '就寝前ルーティン（口テープ→誘導音声）', '約8分',   'bedtime_routine'],
     ],
     hasInterval: false,
   },
@@ -1345,7 +1345,7 @@ const LEVEL_DATA = {
       ['日中（6セット）',  'ブリーズライト（空気飢餓感あり）',               '4分×6回', 'breathe_light_4'],
       ['日中1回',          '口を閉じたまま歩く',                             '10分',     null],
       ['鼻づまり時',       '鼻づまり解消エクササイズ（就寝前・鼻が詰まっているとき）', '必要時',   'nose_clear'],
-      ['就寝前',           '就寝前ルーティン（口テープ→軽いブリーズライト）', '約8分','bedtime_routine'],
+      ['就寝前',           '就寝前ルーティン（口テープ→誘導音声）', '約8分','bedtime_routine'],
       ['夜中に目覚めたら', '回復呼吸エクササイズ＋誘導音声',                '随時',     'breath_hold_5'],
     ],
     hasInterval: false,
@@ -1361,7 +1361,7 @@ const LEVEL_DATA = {
       ['日中（3セット）',  'CO2インターバル（下記参照）',               '約20分×3回','interval_set'],
       ['鼻づまり時',       '鼻づまり解消エクササイズ',                  '必要時',    'nose_clear'],
       ['夜中に目覚めたら', '回復呼吸エクササイズ＋誘導音声',           '随時',      'breath_hold_5'],
-      ['就寝前',           '就寝前ルーティン（口テープ→軽いブリーズライト）', '約8分', 'bedtime_routine'],
+      ['就寝前',           '就寝前ルーティン（口テープ→誘導音声）', '約8分', 'bedtime_routine'],
     ],
     hasInterval: true,
   },
@@ -1854,7 +1854,7 @@ const EXERCISES = {
     name: '就寝前ルーティン',
     phases: [
       { label: '口テープを装着', desc: 'MyoTapeを唇の中央に軽く貼る（鼻が詰まっているときは先に鼻づまり解消を）。不安な場合は数分このまま様子を見る', secs: 120, icon: '🩹' },
-      { label: '軽いブリーズライト', desc: '口テープをしたまま鼻から静かに呼吸。吐く息を長めに、力を抜いて。強い空気飢餓感は作らず、リラックスして眠りに入る', secs: 360, icon: '🌙' },
+      { label: '誘導音声を聴く', desc: '口テープをしたまま、下の「誘導音声」カードから就寝前・寝つき用の音声を選んで再生。声に合わせて鼻からゆっくり呼吸し、そのまま眠りに入ってOK', secs: 360, icon: '🌙', jumpToAudio: true },
     ],
     loop: false,
   },
@@ -1995,7 +1995,23 @@ function timerAdvancePhase() {
     timer.running = true;
     document.getElementById('timerStartBtn').textContent = '⏸ 一時停止';
     timerTick();
+
+    // 誘導音声フェーズに入ったら音声カードまで案内する
+    if (next.jumpToAudio) {
+      scrollToGuidedAudio();
+    }
   }
+}
+
+function scrollToGuidedAudio() {
+  const card = document.getElementById('guidedAudioCard');
+  if (!card) return;
+  setTimeout(() => {
+    card.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    card.style.transition = 'box-shadow 0.3s';
+    card.style.boxShadow = '0 0 0 3px var(--teal)';
+    setTimeout(() => { card.style.boxShadow = ''; }, 2000);
+  }, 300);
 }
 
 function timerShowManual() {
