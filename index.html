@@ -1854,7 +1854,7 @@ const EXERCISES = {
     name: '就寝前ルーティン',
     phases: [
       { label: '口にテープを貼る', desc: 'MyoTapeを唇の中央に軽く貼る（鼻が詰まっているときは先に鼻づまり解消を）。不安な場合は数分このまま様子を見る。貼れたら「次へ」を押す', secs: -1, manualText: '貼ったら', icon: '🩹' },
-      { label: '誘導音声を聴く', desc: '口テープをしたまま、下の「誘導音声」カードから就寝前・寝つき用の音声を選んで再生。声に合わせて鼻からゆっくり呼吸し、そのまま眠りに入ってOK', secs: 1680, icon: '🌙', jumpToAudio: true },
+      { label: '誘導音声を聴く', desc: '口テープをしたまま、下の「誘導音声」カードから好きな就寝前・寝つき用の音声を選んで再生。声に合わせて鼻からゆっくり呼吸し、そのまま眠りに入ってOK（終了操作は不要です）', secs: -1, manualText: '再生したら', icon: '🌙', jumpToAudio: true },
     ],
     loop: false,
   },
@@ -1920,7 +1920,7 @@ function selectExercise(key, highlightKey) {
   timer.phases   = ex.phases;
   timer.phaseIdx = 0;
   timer.remaining = ex.phases[0].secs;
-  timer.totalSecs = ex.phases.reduce((s, p) => s + p.secs, 0);
+  timer.totalSecs = ex.phases.reduce((s, p) => s + (p.secs === -1 ? 0 : p.secs), 0);
   timer.elapsed   = 0;
 
   document.getElementById('timerCard').style.display = 'block';
@@ -2008,6 +2008,11 @@ function timerAdvancePhase() {
     timerRenderPhase();
     timerRenderSteps();
     timerShowManual();
+
+    // 誘導音声フェーズに入ったら音声カードまで案内する
+    if (next.jumpToAudio) {
+      scrollToGuidedAudio();
+    }
   } else {
     // 通常フェーズ
     timer.remaining = next.secs;
@@ -2041,7 +2046,11 @@ function timerShowManual() {
   const startBtn = document.getElementById('timerStartBtn');
   const nextBtn  = document.getElementById('timerNextBtn');
   startBtn.style.display = 'none';
-  if (nextBtn) nextBtn.style.display = 'flex';
+  if (nextBtn) {
+    nextBtn.style.display = 'flex';
+    const isLast = timer.phaseIdx === timer.phases.length - 1;
+    nextBtn.textContent = isLast ? '✓ 完了にする' : '次へ →';
+  }
   const phase = timer.phases[timer.phaseIdx];
   document.getElementById('timerDisplay').textContent = (phase && phase.manualText) || '——';
 }
@@ -2170,10 +2179,15 @@ function timerRenderPhase() {
   document.getElementById('timerBar').style.width = Math.min(pct, 100) + '%';
 
   // 進捗テキスト
-  const totalM = Math.floor(timer.totalSecs / 60);
-  const elM    = Math.floor(timer.elapsed / 60);
-  document.getElementById('timerProgress').textContent =
-    `経過 ${elM}分 / 合計 ${totalM}分`;
+  if (timer.totalSecs === 0) {
+    document.getElementById('timerProgress').textContent =
+      `ステップ ${timer.phaseIdx + 1} / ${timer.phases.length}`;
+  } else {
+    const totalM = Math.floor(timer.totalSecs / 60);
+    const elM    = Math.floor(timer.elapsed / 60);
+    document.getElementById('timerProgress').textContent =
+      `経過 ${elM}分 / 合計 ${totalM}分`;
+  }
 }
 
 function timerRenderSteps() {
