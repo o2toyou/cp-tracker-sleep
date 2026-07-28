@@ -664,7 +664,7 @@ canvas { display: block; max-width: 100%; }
       </div>
       <div class="ob-body">
         <p class="ob-caution-intro">
-          以下に該当する場合、マキシマムポーズや長い息止めは行わないでください。<br>
+          以下に該当する場合、長い息止めは行わないでください。<br>
           <b>該当するものをすべて選んでください。（なければ選ばずに次へ）</b>
         </p>
         <div class="ob-contra-list">
@@ -1000,7 +1000,7 @@ canvas { display: block; max-width: 100%; }
           <div class="ob-cond-icon">🌙</div>
           <div class="ob-cond-body">
             <div class="ob-cond-title">就寝前ルーティン（約30分）</div>
-            <div class="ob-cond-desc">口テープ装着→誘導音声の流れ。声に合わせて呼吸しながら、そのまま眠りに入る。</div>
+            <div class="ob-cond-desc">口にテープを貼る→誘導音声の流れ。声に合わせて呼吸しながら、そのまま眠りに入る。</div>
           </div>
         </div>
 
@@ -1274,7 +1274,7 @@ canvas { display: block; max-width: 100%; }
       <div class="card-title">SAFETY　安全に関する注意事項</div>
       <div style="font-size:13.5px;color:var(--navy);line-height:2;">
         <b style="color:var(--red);">以下に該当する方は Level 3まで で進めてください：</b><br>
-        高血圧・心疾患・不安症・パニック症・重篤な持病・60歳以上・妊娠初期（全エクササイズ不可）・妊娠中期（ブリーズライトと鼻呼吸は可。長い息止め・マキシマムポーズはNG）
+        高血圧・心疾患・不安症・パニック症・重篤な持病・60歳以上・妊娠初期（全エクササイズ不可）・妊娠中期（ブリーズライトと鼻呼吸は可。長い息止めはNG）
       </div>
       <div style="margin-top:12px;padding:12px 14px;background:var(--lgold);border-radius:4px;font-size:13px;color:var(--navy);line-height:1.9;">
         <b>CPAP・マウスピース使用中の方へ：</b>口テープは緊急時に口を開けられる「囲むタイプ」を選び、装置は継続してご使用ください。呼吸エクササイズは装置の使用を妨げるものではなく、併用することで効果が高まる場合があります。
@@ -1330,7 +1330,7 @@ const LEVEL_DATA = {
       ['または',           '歩行中の回復呼吸エクササイズ（最大10歩×6回）', '5〜10分',  'walking_recovery'],
       ['散歩・移動',       '口を閉じて鼻呼吸で歩く',                        '自然に',   null],
       ['鼻づまり時',       '鼻づまり解消エクササイズ',                      '必要時',   'nose_clear'],
-      ['就寝前',           '就寝前ルーティン（口テープ→誘導音声）', '約30分',   'bedtime_routine'],
+      ['就寝前',           '就寝前ルーティン（口にテープを貼る→誘導音声）', '約30分',   'bedtime_routine'],
     ],
     hasInterval: false,
   },
@@ -1345,7 +1345,7 @@ const LEVEL_DATA = {
       ['日中（6セット）',  'ブリーズライト（空気飢餓感あり）',               '4分×6回', 'breathe_light_4'],
       ['日中1回',          '口を閉じたまま歩く',                             '10分',     null],
       ['鼻づまり時',       '鼻づまり解消エクササイズ（就寝前・鼻が詰まっているとき）', '必要時',   'nose_clear'],
-      ['就寝前',           '就寝前ルーティン（口テープ→誘導音声）', '約30分','bedtime_routine'],
+      ['就寝前',           '就寝前ルーティン（口にテープを貼る→誘導音声）', '約30分','bedtime_routine'],
       ['夜中に目覚めたら', 'ブリーズライトか誘導音声',                      '随時',     'breathe_light_4'],
     ],
     hasInterval: false,
@@ -1361,7 +1361,7 @@ const LEVEL_DATA = {
       ['日中（3セット）',  'CO2インターバル（下記参照）',               '約20分×3回','interval_set'],
       ['鼻づまり時',       '鼻づまり解消エクササイズ',                  '必要時',    'nose_clear'],
       ['夜中に目覚めたら', '回復呼吸エクササイズ＋誘導音声',           '随時',      'breath_hold_5'],
-      ['就寝前',           '就寝前ルーティン（口テープ→誘導音声）', '約30分', 'bedtime_routine'],
+      ['就寝前',           '就寝前ルーティン（口にテープを貼る→誘導音声）', '約30分', 'bedtime_routine'],
     ],
     hasInterval: true,
   },
@@ -1500,12 +1500,12 @@ function renderProgramCard(records) {
   } else if (hasPreg) {
     noticeHTML = `
       <div style="background:var(--lgold);border:1px solid var(--gold);border-left:4px solid var(--gold);border-radius:4px;padding:14px 16px;font-size:13.5px;color:var(--navy);line-height:1.85;margin-bottom:16px;">
-        ⚠ <b>妊娠中期のため、ブリーズライトと鼻呼吸は行えます。</b>長い息止め・マキシマムポーズ・口テープは避けてください。必ず担当医にご確認ください。
+        ⚠ <b>妊娠中期のため、ブリーズライトと鼻呼吸は行えます。</b>長い息止め・口テープは避けてください。必ず担当医にご確認ください。
       </div>`;
   } else if (hasContra && lv === 3) {
     noticeHTML = `
       <div style="background:var(--lgold);border:1px solid var(--gold);border-left:4px solid var(--gold);border-radius:4px;padding:14px 16px;font-size:13.5px;color:var(--navy);line-height:1.85;margin-bottom:16px;">
-        ⚠ <b>禁忌あり × CP ${rec.cp}秒（Level 3）</b>：CO2インターバルはブリーズライトのみのセットで進めてください。マキシマムポーズ・長い息止めは行わないでください。
+        ⚠ <b>禁忌あり × CP ${rec.cp}秒（Level 3）</b>：CO2インターバルはブリーズライトのみのセットで進めてください。長い息止めは行わないでください。
       </div>`;
   } else if (!hasContra && lv === 3) {
     noticeHTML = `
@@ -1807,8 +1807,8 @@ function renderTodayCondCard() {
 // ============================================================
 
 function mkPhases(n, defs) {
-  return Array.from({length: n}, (_, i) => defs.map(([lf, desc, secs, icon]) => ({
-    label: typeof lf === 'function' ? lf(i) : lf, desc, secs, icon
+  return Array.from({length: n}, (_, i) => defs.map(([lf, desc, secs, icon, manualText]) => ({
+    label: typeof lf === 'function' ? lf(i) : lf, desc, secs, icon, manualText
   }))).flat();
 }
 const EXERCISES = {
@@ -1830,7 +1830,7 @@ const EXERCISES = {
   walking_recovery: {
     name: '歩行中の回復呼吸エクササイズ（6セット）',
     phases: mkPhases(6, [
-      [i=>'歩く（'+(i+1)+'/6セット目）','鼻をつまんで最大10歩歩く。終わったら「次へ」を押す',-1,'🚶'],
+      [i=>'歩く（'+(i+1)+'/6セット目）','鼻をつまんで最大10歩歩く。終わったら「次へ」を押す',-1,'🚶','10歩'],
       [i=>'鼻呼吸・休憩（'+(i+1)+'/6セット目）','指を離して鼻から静かに吸い、普通に鼻呼吸する',40,'😮‍💨'],
     ]),
     loop: false,
@@ -1853,7 +1853,7 @@ const EXERCISES = {
   bedtime_routine: {
     name: '就寝前ルーティン',
     phases: [
-      { label: '口テープを装着', desc: 'MyoTapeを唇の中央に軽く貼る（鼻が詰まっているときは先に鼻づまり解消を）。不安な場合は数分このまま様子を見る', secs: 120, icon: '🩹' },
+      { label: '口にテープを貼る', desc: 'MyoTapeを唇の中央に軽く貼る（鼻が詰まっているときは先に鼻づまり解消を）。不安な場合は数分このまま様子を見る。貼れたら「次へ」を押す', secs: -1, manualText: '貼ったら', icon: '🩹' },
       { label: '誘導音声を聴く', desc: '口テープをしたまま、下の「誘導音声」カードから就寝前・寝つき用の音声を選んで再生。声に合わせて鼻からゆっくり呼吸し、そのまま眠りに入ってOK', secs: 1680, icon: '🌙', jumpToAudio: true },
     ],
     loop: false,
@@ -2042,7 +2042,8 @@ function timerShowManual() {
   const nextBtn  = document.getElementById('timerNextBtn');
   startBtn.style.display = 'none';
   if (nextBtn) nextBtn.style.display = 'flex';
-  document.getElementById('timerDisplay').textContent = '10歩';
+  const phase = timer.phases[timer.phaseIdx];
+  document.getElementById('timerDisplay').textContent = (phase && phase.manualText) || '——';
 }
 
 function timerShowAuto() {
@@ -2154,7 +2155,7 @@ function timerRenderPhase() {
   const phase = timer.phases[timer.phaseIdx];
   if (!phase) return;
   if (timer.remaining === -1) {
-    document.getElementById('timerDisplay').textContent = '10歩';
+    document.getElementById('timerDisplay').textContent = phase.manualText || '——';
   } else {
     const m = Math.floor(timer.remaining / 60);
     const s = timer.remaining % 60;
@@ -2296,11 +2297,11 @@ function obNextContra() {
     obProfile.hasContra = true;
   } else if (obProfile.hasContra) {
     resEl.className = 'ob-contra-result show warn';
-    resEl.innerHTML = '⚠ <b>禁忌あり</b>として記録しました。プログラムは <b>Level 3（ブリーズライトのみ）まで</b> で進めてください。マキシマムポーズ・長い息止めは行わないでください。';
+    resEl.innerHTML = '⚠ <b>禁忌あり</b>として記録しました。プログラムは <b>Level 3（ブリーズライトのみ）まで</b> で進めてください。長い息止めは行わないでください。';
 
   } else if (checked.includes('preg')) {
     resEl.className = 'ob-contra-result show warn';
-    resEl.innerHTML = '⚠ <b>妊娠中期（第2三半期）</b>：ブリーズライトと鼻呼吸は可。長い息止め・マキシマムポーズ・口テープは避けてください。必ず担当医にご確認ください。';
+    resEl.innerHTML = '⚠ <b>妊娠中期（第2三半期）</b>：ブリーズライトと鼻呼吸は可。長い息止め・口テープは避けてください。必ず担当医にご確認ください。';
     obProfile.hasContra = true;
   } else if (checked.includes('cpap')) {
     resEl.className = 'ob-contra-result show ok';
